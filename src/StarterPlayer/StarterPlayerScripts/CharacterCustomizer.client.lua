@@ -1,6 +1,12 @@
 -- CharacterCustomizer.client.lua
--- Lobby character customizer: hairstyles (30+), heads (classic + weird), bodies, voice packs.
--- Builds a ScreenGui at runtime, no pre-built UI required. Press M to toggle.
+-- The first thing a new player sees. Full-screen menu shown automatically on join,
+-- not gated behind a keybind. Lets the player pick hair, head, body, and voice,
+-- then click START SHIFT to fire the StartShift remote — server teleports them
+-- into the stand and unfreezes movement. Pressing M re-opens the menu later
+-- (post-shift) so players can re-customize without restarting.
+--
+-- Note: the actual "freeze the player at the lobby pad" piece lives in
+-- SpawnFlow.server.lua. This client only owns the UI and the remote fire.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -9,9 +15,11 @@ local UserInputService = game:GetService("UserInputService")
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local EquipItemEvent = Remotes:WaitForChild("EquipItem")
 local ProfileLoadedEvent = Remotes:WaitForChild("ProfileLoaded")
+local StartShiftEvent = Remotes:WaitForChild("StartShift")
 
 local player = Players.LocalPlayer
-local DUTCH_BLUE = Color3.fromHex("#005AAB")
+local DUTCH_BLUE = Color3.fromRGB(0, 90, 171)
+local DUTCH_ORANGE = Color3.fromRGB(255, 122, 0)
 
 -- ===== Customization data =====
 local Hairstyles = {}
@@ -31,18 +39,18 @@ do
 end
 
 local Heads = {
-    {id = "head_classic",     name = "Classic Bro",  weird = false},
-    {id = "head_frog",        name = "Frog",         weird = true},
-    {id = "head_cat",         name = "Cat",          weird = true},
-    {id = "head_toaster",     name = "Toaster",      weird = true},
-    {id = "head_pumpkin",     name = "Pumpkin",      weird = true},
-    {id = "head_robot",       name = "Robot",        weird = true},
-    {id = "head_dino",        name = "Dinosaur",     weird = true},
-    {id = "head_penguin",     name = "Penguin",      weird = true},
-    {id = "head_alien",       name = "Lil' Alien",   weird = true},
-    {id = "head_marshmallow", name = "Marshmallow",  weird = true},
-    {id = "head_donut",       name = "Donut",        weird = true},
-    {id = "head_cup",         name = "Walking Cup",  weird = true},
+    {id = "head_classic",     name = "Classic Bro"},
+    {id = "head_frog",        name = "Frog"},
+    {id = "head_cat",         name = "Cat"},
+    {id = "head_toaster",     name = "Toaster"},
+    {id = "head_pumpkin",     name = "Pumpkin"},
+    {id = "head_robot",       name = "Robot"},
+    {id = "head_dino",        name = "Dinosaur"},
+    {id = "head_penguin",     name = "Penguin"},
+    {id = "head_alien",       name = "Lil' Alien"},
+    {id = "head_marshmallow", name = "Marshmallow"},
+    {id = "head_donut",       name = "Donut"},
+    {id = "head_cup",         name = "Walking Cup"},
 }
 
 local BodyTypes = {
@@ -76,51 +84,107 @@ local TAB_ORDER = {"Hair", "Head", "Body", "Voice"}
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "CharacterCustomizer"
 screenGui.ResetOnSpawn = false
-screenGui.Enabled = false
+screenGui.Enabled = true            -- shown immediately on join
 screenGui.IgnoreGuiInset = true
+screenGui.DisplayOrder = 50
 screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Dimmed full-screen backdrop so the world behind feels muted while customizing
+local backdrop = Instance.new("Frame")
+backdrop.Size = UDim2.fromScale(1, 1)
+backdrop.BackgroundColor3 = Color3.fromRGB(10, 14, 20)
+backdrop.BackgroundTransparency = 0.25
+backdrop.BorderSizePixel = 0
+backdrop.Parent = screenGui
 
 local frame = Instance.new("Frame")
 frame.Name = "Root"
-frame.Size = UDim2.fromScale(0.7, 0.8)
+frame.Size = UDim2.fromScale(0.78, 0.86)
 frame.AnchorPoint = Vector2.new(0.5, 0.5)
 frame.Position = UDim2.fromScale(0.5, 0.5)
 frame.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
 frame.Parent = screenGui
 local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0, 12)
+frameCorner.CornerRadius = UDim.new(0, 14)
 frameCorner.Parent = frame
+local frameStroke = Instance.new("UIStroke")
+frameStroke.Color = DUTCH_ORANGE
+frameStroke.Thickness = 2
+frameStroke.Parent = frame
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 56)
+title.Size = UDim2.new(1, 0, 0, 64)
 title.Text = "Customize Your Broista"
 title.BackgroundColor3 = DUTCH_BLUE
 title.TextColor3 = Color3.new(1, 1, 1)
 title.Font = Enum.Font.GothamBold
-title.TextSize = 24
+title.TextSize = 26
 title.Parent = frame
 local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0, 12)
+titleCorner.CornerRadius = UDim.new(0, 14)
 titleCorner.Parent = title
 
+local subtitle = Instance.new("TextLabel")
+subtitle.Size = UDim2.new(1, 0, 0, 22)
+subtitle.Position = UDim2.fromOffset(0, 64)
+subtitle.BackgroundTransparency = 1
+subtitle.Text = "Pick your look, then start your shift."
+subtitle.Font = Enum.Font.GothamMedium
+subtitle.TextSize = 14
+subtitle.TextColor3 = Color3.fromRGB(220, 220, 230)
+subtitle.Parent = frame
+
+-- Avatar preview pane (left side). Uses ViewportFrame to render the live character.
+local previewPane = Instance.new("Frame")
+previewPane.Size = UDim2.new(0.36, -16, 1, -180)
+previewPane.Position = UDim2.fromOffset(8, 96)
+previewPane.BackgroundColor3 = Color3.fromRGB(20, 22, 28)
+previewPane.BorderSizePixel = 0
+previewPane.Parent = frame
+local previewCorner = Instance.new("UICorner")
+previewCorner.CornerRadius = UDim.new(0, 10)
+previewCorner.Parent = previewPane
+
+local viewport = Instance.new("ViewportFrame")
+viewport.Size = UDim2.fromScale(1, 1)
+viewport.BackgroundTransparency = 1
+viewport.Parent = previewPane
+
+local previewLabel = Instance.new("TextLabel")
+previewLabel.Size = UDim2.new(1, 0, 0, 28)
+previewLabel.Position = UDim2.new(0, 0, 1, -28)
+previewLabel.BackgroundTransparency = 0.4
+previewLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+previewLabel.Text = "Live Preview"
+previewLabel.Font = Enum.Font.GothamMedium
+previewLabel.TextSize = 14
+previewLabel.TextColor3 = Color3.new(1, 1, 1)
+previewLabel.Parent = previewPane
+
+-- Tab bar + list (right side)
+local rightPane = Instance.new("Frame")
+rightPane.Size = UDim2.new(0.64, -16, 1, -180)
+rightPane.Position = UDim2.new(0.36, 8, 0, 96)
+rightPane.BackgroundTransparency = 1
+rightPane.Parent = frame
+
 local tabBar = Instance.new("Frame")
-tabBar.Size = UDim2.new(1, -16, 0, 40)
-tabBar.Position = UDim2.fromOffset(8, 64)
+tabBar.Size = UDim2.new(1, 0, 0, 40)
 tabBar.BackgroundTransparency = 1
-tabBar.Parent = frame
+tabBar.Parent = rightPane
 
 local listFrame = Instance.new("ScrollingFrame")
-listFrame.Size = UDim2.new(1, -16, 1, -120)
-listFrame.Position = UDim2.fromOffset(8, 112)
+listFrame.Size = UDim2.new(1, 0, 1, -52)
+listFrame.Position = UDim2.fromOffset(0, 48)
 listFrame.BackgroundTransparency = 1
 listFrame.BorderSizePixel = 0
 listFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
 listFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 listFrame.ScrollBarThickness = 6
-listFrame.Parent = frame
+listFrame.Parent = rightPane
 
 local listLayout = Instance.new("UIGridLayout")
-listLayout.CellSize = UDim2.fromOffset(160, 64)
+listLayout.CellSize = UDim2.fromOffset(170, 56)
 listLayout.CellPadding = UDim2.fromOffset(8, 8)
 listLayout.Parent = listFrame
 
@@ -148,12 +212,12 @@ local function makeOption(item, slot)
     btn.MouseButton1Click:Connect(function()
         EquipItemEvent:FireServer(slot, item.id)
         equipped[slot] = item.id
-        btn.BackgroundColor3 = DUTCH_BLUE
         for _, sibling in ipairs(listFrame:GetChildren()) do
-            if sibling ~= btn and sibling:IsA("TextButton") then
+            if sibling:IsA("TextButton") then
                 sibling.BackgroundColor3 = Color3.fromRGB(48, 48, 56)
             end
         end
+        btn.BackgroundColor3 = DUTCH_BLUE
     end)
 end
 
@@ -184,6 +248,45 @@ for i, tabName in ipairs(TAB_ORDER) do
     end)
 end
 
+-- ===== START SHIFT button (bottom of frame) =====
+local startBtn = Instance.new("TextButton")
+startBtn.Size = UDim2.new(0, 280, 0, 56)
+startBtn.AnchorPoint = Vector2.new(0.5, 1)
+startBtn.Position = UDim2.new(0.5, 0, 1, -16)
+startBtn.Text = "START SHIFT"
+startBtn.Font = Enum.Font.GothamBold
+startBtn.TextSize = 22
+startBtn.TextColor3 = Color3.new(1, 1, 1)
+startBtn.BackgroundColor3 = DUTCH_ORANGE
+startBtn.AutoButtonColor = true
+startBtn.Parent = frame
+local startCorner = Instance.new("UICorner")
+startCorner.CornerRadius = UDim.new(0, 12)
+startCorner.Parent = startBtn
+local startStroke = Instance.new("UIStroke")
+startStroke.Color = Color3.new(1, 1, 1)
+startStroke.Thickness = 2
+startStroke.Parent = startBtn
+
+local hint = Instance.new("TextLabel")
+hint.Size = UDim2.new(1, -32, 0, 18)
+hint.AnchorPoint = Vector2.new(0.5, 1)
+hint.Position = UDim2.new(0.5, 0, 1, -76)
+hint.BackgroundTransparency = 1
+hint.Text = "Tip: press M anytime to re-open this menu after your shift starts."
+hint.Font = Enum.Font.Gotham
+hint.TextSize = 12
+hint.TextColor3 = Color3.fromRGB(180, 180, 190)
+hint.Parent = frame
+
+local started = false
+startBtn.MouseButton1Click:Connect(function()
+    if started then return end
+    started = true
+    StartShiftEvent:FireServer()
+    screenGui.Enabled = false
+end)
+
 ProfileLoadedEvent.OnClientEvent:Connect(function(profile)
     if profile and profile.equipped then
         for slot, itemId in pairs(profile.equipped) do
@@ -195,9 +298,38 @@ end)
 
 refreshList()
 
+-- Allow re-opening the menu after the shift has started (so players can adjust look)
 UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
-    if input.KeyCode == Enum.KeyCode.M then
+    if input.KeyCode == Enum.KeyCode.M and started then
         screenGui.Enabled = not screenGui.Enabled
     end
 end)
+
+-- ===== Live avatar preview =====
+-- Mirrors the player's character into the ViewportFrame so they can see
+-- equipment changes in real time. Re-clones whenever the character respawns.
+local function refreshPreview(character)
+    if not character then return end
+    -- clear viewport
+    for _, child in ipairs(viewport:GetChildren()) do
+        if not child:IsA("Camera") then child:Destroy() end
+    end
+    local clone = character:Clone()
+    clone.Parent = viewport
+
+    local cam = viewport:FindFirstChildOfClass("Camera")
+    if not cam then
+        cam = Instance.new("Camera")
+        cam.Parent = viewport
+    end
+    viewport.CurrentCamera = cam
+
+    local hrp = clone:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        cam.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 1, 6), hrp.Position + Vector3.new(0, 1, 0))
+    end
+end
+
+if player.Character then refreshPreview(player.Character) end
+player.CharacterAdded:Connect(refreshPreview)

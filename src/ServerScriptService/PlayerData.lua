@@ -25,7 +25,25 @@ local STORE_NAME = "DutchBrosRush_PlayerData_v1"
 local AUTOSAVE_INTERVAL = 60
 local MAX_RETRIES = 3
 
-local store = DataStoreService:GetDataStore(STORE_NAME)
+-- DataStores are unavailable in Studio (and on unpublished places where PlaceId == 0),
+-- so swap in an in-memory mock that mimics the GetAsync/SetAsync surface we use.
+local IS_STUDIO = RunService:IsStudio() or game.PlaceId == 0
+
+local store
+if IS_STUDIO then
+    print("[PlayerData] Studio detected — using in-memory mock DataStore (no persistence).")
+    local mockData = {}
+    store = {
+        GetAsync = function(_, k)
+            return mockData[k]
+        end,
+        SetAsync = function(_, k, v)
+            mockData[k] = v
+        end,
+    }
+else
+    store = DataStoreService:GetDataStore(STORE_NAME)
+end
 
 local function defaultProfile()
     return {
@@ -89,10 +107,7 @@ local function safeSave(userId, data)
 end
 
 local function loadProfile(player)
-    local raw
-    if not RunService:IsStudio() then
-        raw = safeLoad(player.UserId)
-    end
+    local raw = safeLoad(player.UserId)
     local profile = raw or defaultProfile()
 
     -- Backfill any new default fields onto older saved profiles
@@ -110,7 +125,6 @@ end
 local function saveProfile(player)
     local profile = PlayerData.Profiles[player]
     if not profile then return end
-    if RunService:IsStudio() then return end -- skip writes in Studio for safety
     safeSave(player.UserId, profile)
 end
 
@@ -181,7 +195,7 @@ Players.PlayerRemoving:Connect(function(player)
 end)
 
 game:BindToClose(function()
-    if RunService:IsStudio() then return end
+    if IS_STUDIO then return end
     for _, player in ipairs(Players:GetPlayers()) do
         task.spawn(saveProfile, player)
     end
