@@ -201,6 +201,8 @@ end
 -- Reuses the prompt that StationInteraction's bindTag has already attached
 -- (its Triggered handler is already bound — we just want to set the text).
 -- Creates one if absent (covers parts that aren't tagged, e.g. HandoffWindow).
+-- Sets GamepadKeyCode = ButtonA so console players see the correct glyph
+-- and the prompt auto-triggers on ButtonA when in range.
 local function addPrompt(part, objectText, actionText, distance)
     local prompt = part:FindFirstChildOfClass("ProximityPrompt")
     if not prompt then
@@ -212,6 +214,7 @@ local function addPrompt(part, objectText, actionText, distance)
     prompt.MaxActivationDistance = distance or 8
     prompt.ObjectText = objectText
     prompt.ActionText = actionText
+    prompt.GamepadKeyCode = Enum.KeyCode.ButtonA
     return prompt
 end
 

@@ -425,6 +425,24 @@ player.CharacterAdded:Connect(function(character)
     task.defer(function() refreshPreview(character) end)
 end)
 
+-- ===== Mobile / small-screen scaling =====
+-- On screens narrower than 800px the desktop layout is unreadable; widen
+-- the frame to 96% and apply a UIScale so all child labels shrink with it.
+local mobileScale = Instance.new("UIScale")
+mobileScale.Parent = frame
+local function applyResponsiveSize()
+    local width = screenGui.AbsoluteSize.X
+    if width < 800 then
+        frame.Size = UDim2.fromScale(0.96, 0.96)
+        mobileScale.Scale = math.clamp(width / 1280, 0.55, 0.85)
+    else
+        frame.Size = UDim2.fromScale(0.78, 0.86)
+        mobileScale.Scale = 1
+    end
+end
+applyResponsiveSize()
+screenGui:GetPropertyChangedSignal("AbsoluteSize"):Connect(applyResponsiveSize)
+
 -- Orbit the viewport camera around the preview character. ViewportFrames
 -- don't tick physics, so we drive the camera ourselves on RenderStepped.
 RunService.RenderStepped:Connect(function(dt)

@@ -247,3 +247,19 @@ UserInputService.InputBegan:Connect(function(input, processed)
         screenGui.Enabled = not screenGui.Enabled
     end
 end)
+
+-- ===== Mobile / small-screen scaling =====
+local merchScale = Instance.new("UIScale")
+merchScale.Parent = frame
+local function applyMerchResponsiveSize()
+    local width = screenGui.AbsoluteSize.X
+    if width < 800 then
+        frame.Size = UDim2.fromScale(0.96, 0.92)
+        merchScale.Scale = math.clamp(width / 1280, 0.55, 0.85)
+    else
+        frame.Size = UDim2.fromScale(0.78, 0.85)
+        merchScale.Scale = 1
+    end
+end
+applyMerchResponsiveSize()
+screenGui:GetPropertyChangedSignal("AbsoluteSize"):Connect(applyMerchResponsiveSize)

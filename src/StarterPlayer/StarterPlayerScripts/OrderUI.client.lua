@@ -144,3 +144,19 @@ end
 NewOrder.OnClientEvent:Connect(makeCard)
 OrderComplete.OnClientEvent:Connect(function(orderID) removeCard(orderID) end)
 OrderFailed.OnClientEvent:Connect(function(orderID) removeCard(orderID) end)
+
+-- ===== Mobile / small-screen scaling =====
+-- On phones, the 320px-wide queue overlaps the bottom-right action button
+-- cluster. Narrow it and shift up so cards stay visible above the buttons.
+local function applyResponsiveContainer()
+    local width = screenGui.AbsoluteSize.X
+    if width < 800 then
+        container.Size = UDim2.new(0, 220, 0, 360)
+        container.Position = UDim2.new(1, -8, 0, 70)
+    else
+        container.Size = UDim2.new(0, 320, 0.8, 0)
+        container.Position = UDim2.new(1, -340, 0, 80)
+    end
+end
+applyResponsiveContainer()
+screenGui:GetPropertyChangedSignal("AbsoluteSize"):Connect(applyResponsiveContainer)

@@ -35,6 +35,8 @@ local function setupStation(stationPart, action)
         prompt.MaxActivationDistance = 8
         prompt.Parent = stationPart
     end
+    -- Console players see ButtonA glyph; ButtonA auto-triggers in range.
+    prompt.GamepadKeyCode = Enum.KeyCode.ButtonA
 
     prompt.Triggered:Connect(function(player)
         action(player, stationPart)
