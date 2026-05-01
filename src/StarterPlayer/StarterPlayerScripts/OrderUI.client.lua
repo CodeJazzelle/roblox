@@ -20,6 +20,15 @@ local DUTCH_BLUE = Color3.fromHex("#005AAB")
 local TIP_GOLD   = Color3.fromRGB(255, 200, 50)
 local SECRET_GOLD = Color3.fromRGB(255, 215, 60)
 
+-- Size badges sit to the LEFT of the drink name on each card so the
+-- player can see Small/Medium/Large at a glance without reading the
+-- title parenthetical.
+local SIZE_COLORS = {
+    Small  = Color3.fromRGB(240, 200, 60),
+    Medium = Color3.fromRGB(0,   120, 215),
+    Large  = Color3.fromRGB(220, 80,  80),
+}
+
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "OrderQueue"
 screenGui.ResetOnSpawn = false
@@ -44,7 +53,8 @@ local function makeCard(orderID, payload)
     nextLayoutOrder += 1
 
     local card = Instance.new("Frame")
-    card.Size = UDim2.new(1, 0, 0, 92)
+    -- Taller card (110) so wrapped two-line drink names + size badge fit cleanly.
+    card.Size = UDim2.new(1, 0, 0, 110)
     card.BackgroundColor3 = payload.isSecret and Color3.fromRGB(80, 30, 120) or Color3.fromRGB(255, 255, 255)
     card.LayoutOrder = nextLayoutOrder
     card.Parent = container
@@ -58,17 +68,36 @@ local function makeCard(orderID, payload)
     accent.BorderSizePixel = 0
     accent.Parent = card
 
+    -- Size badge: 50×22 colored pill to the LEFT of the drink name.
+    local sizeBadge = Instance.new("TextLabel")
+    sizeBadge.Size = UDim2.fromOffset(50, 22)
+    sizeBadge.Position = UDim2.fromOffset(12, 10)
+    sizeBadge.BackgroundColor3 = SIZE_COLORS[payload.size] or Color3.fromRGB(120, 120, 120)
+    sizeBadge.BorderSizePixel = 0
+    sizeBadge.Text = (payload.size or "?"):upper()
+    sizeBadge.Font = Enum.Font.GothamBlack
+    sizeBadge.TextSize = 12
+    sizeBadge.TextColor3 = Color3.new(1, 1, 1)
+    sizeBadge.Parent = card
+    local sizeBadgeCorner = Instance.new("UICorner")
+    sizeBadgeCorner.CornerRadius = UDim.new(0, 4)
+    sizeBadgeCorner.Parent = sizeBadge
+
+    -- Title: starts to the right of the size badge (x=70). Width leaves
+    -- room for the tip badge on the right (-178 = 70 left padding + 100
+    -- tip badge width + 8 gap). TextWrapped lets long names use a 2nd
+    -- line instead of getting truncated with "...".
     local title = Instance.new("TextLabel")
-    -- Leaves room on the right for the tip badge
-    title.Size = UDim2.new(1, -120, 0, 28)
-    title.Position = UDim2.fromOffset(12, 6)
+    title.Size = UDim2.new(1, -178, 0, 38)
+    title.Position = UDim2.fromOffset(70, 6)
     title.BackgroundTransparency = 1
     title.TextXAlignment = Enum.TextXAlignment.Left
+    title.TextYAlignment = Enum.TextYAlignment.Top
     title.Font = Enum.Font.GothamBold
-    title.TextSize = 18
-    title.Text = payload.displayName .. " (" .. payload.size .. ")"
+    title.TextSize = 16
+    title.Text = payload.displayName
+    title.TextWrapped = true
     title.TextColor3 = payload.isSecret and Color3.new(1, 1, 1) or Color3.fromRGB(20, 20, 20)
-    title.TextTruncate = Enum.TextTruncate.AtEnd
     title.Parent = card
 
     -- Tip badge in the top-right corner — yellow/gold so it pops.
@@ -107,9 +136,10 @@ local function makeCard(orderID, payload)
     end
 
     local details = Instance.new("TextLabel")
-    -- More vertical space now that the timer bar is gone
-    details.Size = UDim2.new(1, -16, 0, 56)
-    details.Position = UDim2.fromOffset(12, 32)
+    -- Shifted down to y=50 so a 2-line wrapped title (top 6→44) doesn't
+    -- overlap. Card is 110 tall; details fits in 50→104.
+    details.Size = UDim2.new(1, -16, 0, 54)
+    details.Position = UDim2.fromOffset(12, 50)
     details.BackgroundTransparency = 1
     details.TextXAlignment = Enum.TextXAlignment.Left
     details.TextYAlignment = Enum.TextYAlignment.Top
