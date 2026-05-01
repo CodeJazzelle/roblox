@@ -6,8 +6,6 @@
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-local GuiService = game:GetService("GuiService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -16,22 +14,12 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- Detect platform from current/last input type
 -- ============================================================
 local function isPlayStation()
-    -- Roblox doesn't expose a clean PS/Xbox switch; we infer via the
-    -- gamepad's connected controller types when available, and fall back
-    -- to a generic gamepad layout otherwise.
-    local enumValue = GuiService:GetEmotesMenuOpen and GuiService:GetEmotesMenuOpen() and false or false
-    -- Best-effort: check if any connected gamepad is a known PS-series
-    local navGamepads = UserInputService:GetNavigationGamepads()
-    for _, gp in ipairs(navGamepads) do
-        local state = UserInputService:GetGamepadState(gp)
-        for _, key in ipairs(state) do
-            -- DualShock/DualSense report Cross/Circle/Square/Triangle
-            -- glyphs but the KeyCode names are still ButtonA/B/X/Y. We
-            -- can't tell from KeyCodes alone.
-        end
-    end
-    return false  -- default to Xbox glyphs; platform users can mentally
-                  -- swap PS ↔ Xbox bindings (positions are the same)
+    -- Roblox's KeyCode names are unified (ButtonA/B/X/Y) regardless of
+    -- whether a Sony or Microsoft controller is connected, and there's
+    -- no public API that distinguishes them. Default to Xbox glyphs;
+    -- the button positions are identical so a PlayStation player still
+    -- presses the correct physical button.
+    return false
 end
 
 local function getInputType()

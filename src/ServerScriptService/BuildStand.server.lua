@@ -347,10 +347,10 @@ do
         })
         return p
     end
-    waypoint("DTSpawn",  +50, "Spawn")
-    waypoint("DTOrder",  +18, "Order")
-    waypoint("DTPickup",  +2, "Pickup")
-    waypoint("DTExit",   -50, "Exit")
+    waypoint("DTSpawn",  50, "Spawn")
+    waypoint("DTOrder",  18, "Order")
+    waypoint("DTPickup",  2, "Pickup")
+    waypoint("DTExit",  -50, "Exit")
 end
 print("[BuildStand] Drive-thru waypoints placed (Spawn / Order / Pickup / Exit)")
 

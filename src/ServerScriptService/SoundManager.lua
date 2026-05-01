@@ -27,7 +27,8 @@ SoundManager.Sounds = {
     -- Gameplay
     OrderComplete   = "rbxassetid://3120909354",
     WrongDrink      = "rbxassetid://3744371091",
-    RoundStart      = "rbxassetid://9117990702",
+    -- 9117990702 returned 403 in testing; swapped for a known-public whistle.
+    RoundStart      = "rbxassetid://138081500",
     RoundEnd        = "rbxassetid://3744371091",
     ComboIncrease   = "rbxassetid://3120909354",
     ComboBreak      = "rbxassetid://9117997078",
