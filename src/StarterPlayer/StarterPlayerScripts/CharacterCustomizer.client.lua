@@ -373,13 +373,29 @@ local previewCenter = Vector3.new(0, 3, 0)
 local previewAngle = 0
 
 local function refreshPreview(character)
+    -- Hard guard: nothing to clone if the caller passed nil.
     if not character then return end
+    -- CharacterAdded can fire before the body parts finish parenting and
+    -- before Archivable settles. Wait for the Humanoid so :Clone() returns
+    -- a fully-populated model rather than nil/partial.
+    local hum = character:FindFirstChildOfClass("Humanoid")
+    if not hum then
+        hum = character:WaitForChild("Humanoid", 5)
+        if not hum then return end
+    end
+
+    local clone = character:Clone()
+    if not clone then return end  -- Archivable=false on some descendant; bail
+
+    -- Clear any previous preview only AFTER we've confirmed the new clone
+    -- is valid, so a failed clone doesn't leave the viewport empty.
     for _, child in ipairs(viewport:GetChildren()) do
         if not child:IsA("Camera") then child:Destroy() end
     end
-    previewClone = character:Clone()
-    -- ViewportFrames don't run physics — anchor every part so the clone holds
-    -- pose, and strip any local scripts the character carries.
+
+    previewClone = clone
+    -- ViewportFrames don't run physics — anchor every part so the clone
+    -- holds pose, and strip any local scripts the character carries.
     for _, descendant in ipairs(previewClone:GetDescendants()) do
         if descendant:IsA("BasePart") then
             descendant.Anchored = true
@@ -400,8 +416,14 @@ local function refreshPreview(character)
     viewport.CurrentCamera = cam
 end
 
-if player.Character then refreshPreview(player.Character) end
-player.CharacterAdded:Connect(refreshPreview)
+-- Trigger the first refresh when the character is ready, and re-run
+-- whenever it respawns so the preview never goes stale.
+if player.Character then
+    task.defer(function() refreshPreview(player.Character) end)
+end
+player.CharacterAdded:Connect(function(character)
+    task.defer(function() refreshPreview(character) end)
+end)
 
 -- Orbit the viewport camera around the preview character. ViewportFrames
 -- don't tick physics, so we drive the camera ourselves on RenderStepped.

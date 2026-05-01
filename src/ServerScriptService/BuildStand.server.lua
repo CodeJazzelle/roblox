@@ -351,13 +351,13 @@ mkPart({
     Name = "BackWall",
     Size = Vector3.new(BLD_W, BLD_H, WALL_THICK),
     CFrame = CFrame.new(0, FLOOR_TOP + BLD_H/2, -BLD_D/2 + WALL_THICK/2),
-    Color = METAL_BLUEGRAY, Material = Enum.Material.CorrugatedMetal,
+    Color = METAL_BLUEGRAY, Material = Enum.Material.DiamondPlate,
 })
 mkPart({
     Name = "LeftWall",
     Size = Vector3.new(WALL_THICK, BLD_H, BLD_D),
     CFrame = CFrame.new(-BLD_W/2 + WALL_THICK/2, FLOOR_TOP + BLD_H/2, 0),
-    Color = METAL_BLUEGRAY, Material = Enum.Material.CorrugatedMetal,
+    Color = METAL_BLUEGRAY, Material = Enum.Material.DiamondPlate,
 })
 
 -- Right wall: drive-thru window cutout at z ∈ [-3, 7], y ∈ [3, 8]
@@ -368,25 +368,25 @@ mkPart({
     Name = "RightWallBackSeg",
     Size = Vector3.new(WALL_THICK, BLD_H, DTW_Z1 - (-BLD_D/2)),
     CFrame = CFrame.new(RIGHT_X, FLOOR_TOP + BLD_H/2, ((-BLD_D/2) + DTW_Z1)/2),
-    Color = METAL_BLUEGRAY, Material = Enum.Material.CorrugatedMetal,
+    Color = METAL_BLUEGRAY, Material = Enum.Material.DiamondPlate,
 })
 mkPart({
     Name = "RightWallFrontSeg",
     Size = Vector3.new(WALL_THICK, BLD_H, (BLD_D/2) - DTW_Z2),
     CFrame = CFrame.new(RIGHT_X, FLOOR_TOP + BLD_H/2, (DTW_Z2 + (BLD_D/2))/2),
-    Color = METAL_BLUEGRAY, Material = Enum.Material.CorrugatedMetal,
+    Color = METAL_BLUEGRAY, Material = Enum.Material.DiamondPlate,
 })
 mkPart({
     Name = "RightWallAboveDTW",
     Size = Vector3.new(WALL_THICK, BLD_H - DTW_Y2, DTW_Z2 - DTW_Z1),
     CFrame = CFrame.new(RIGHT_X, FLOOR_TOP + DTW_Y2 + (BLD_H - DTW_Y2)/2, (DTW_Z1 + DTW_Z2)/2),
-    Color = METAL_BLUEGRAY, Material = Enum.Material.CorrugatedMetal,
+    Color = METAL_BLUEGRAY, Material = Enum.Material.DiamondPlate,
 })
 mkPart({
     Name = "RightWallBelowDTW",
     Size = Vector3.new(WALL_THICK, DTW_Y1, DTW_Z2 - DTW_Z1),
     CFrame = CFrame.new(RIGHT_X, FLOOR_TOP + DTW_Y1/2, (DTW_Z1 + DTW_Z2)/2),
-    Color = METAL_BLUEGRAY, Material = Enum.Material.CorrugatedMetal,
+    Color = METAL_BLUEGRAY, Material = Enum.Material.DiamondPlate,
 })
 print("[BuildStand] Walls built (back, left, right; FRONT OPEN)")
 
@@ -398,13 +398,13 @@ do
         Name = "BlueAccentTowerFront",
         Size = Vector3.new(5, BLD_H + 5, 0.4),
         CFrame = CFrame.new(-BLD_W/2 + 2.5, FLOOR_TOP + (BLD_H + 5)/2, BLD_D/2 + 0.3),
-        Color = DARK_BLUE, Material = Enum.Material.CorrugatedMetal,
+        Color = DARK_BLUE, Material = Enum.Material.DiamondPlate,
     })
     mkPart({
         Name = "BlueAccentTowerSide",
         Size = Vector3.new(0.4, BLD_H + 5, 5),
         CFrame = CFrame.new(-BLD_W/2 - 0.3, FLOOR_TOP + (BLD_H + 5)/2, BLD_D/2 - 2),
-        Color = DARK_BLUE, Material = Enum.Material.CorrugatedMetal,
+        Color = DARK_BLUE, Material = Enum.Material.DiamondPlate,
     })
     mkPart({
         Name = "BlueAccentTowerCap",
