@@ -348,31 +348,17 @@ mkPart({
     Color = METAL_BLUEGRAY, Material = Enum.Material.CorrugatedMetal,
 })
 
--- Front of the building is OPEN — the entire face from floor to y=10 has no
--- wall, so players see the parking lot / cars / drive-thru clearly. We keep
--- only short corner panels (at the very edges) and a top fascia band above
--- y=10 so the DUTCH BROS sign and rainbow stripe still have something to
--- mount on. Roof is held up by the corner stone pillars + awning pillars.
+-- The entire FRONT face is open air. No wall segments — pavilion-style.
+-- The roof is visually supported by the existing stone pillars (FrontLeftPillar,
+-- FrontRightPillar at the corners + the two awning pillars further out).
+-- A thin DUTCH_BLUE fascia beam at the top of the front face gives the
+-- "DUTCH BROS Coffee" sign and rainbow stripe something to mount on.
 local FRONT_Z = BLD_D/2 - WALL_THICK/2
-local FRONT_OPEN_TOP_Y = 10
-local CORNER_PANEL_W = 3
 mkPart({
-    Name = "FrontWallLeftCorner",
-    Size = Vector3.new(CORNER_PANEL_W, BLD_H, WALL_THICK),
-    CFrame = CFrame.new(-BLD_W/2 + CORNER_PANEL_W/2, FLOOR_TOP + BLD_H/2, FRONT_Z),
-    Color = METAL_BLUEGRAY, Material = Enum.Material.CorrugatedMetal,
-})
-mkPart({
-    Name = "FrontWallRightCorner",
-    Size = Vector3.new(CORNER_PANEL_W, BLD_H, WALL_THICK),
-    CFrame = CFrame.new(BLD_W/2 - CORNER_PANEL_W/2, FLOOR_TOP + BLD_H/2, FRONT_Z),
-    Color = METAL_BLUEGRAY, Material = Enum.Material.CorrugatedMetal,
-})
-mkPart({
-    Name = "FrontWallTopBand",
-    Size = Vector3.new(BLD_W - 2 * CORNER_PANEL_W, BLD_H - FRONT_OPEN_TOP_Y, WALL_THICK),
-    CFrame = CFrame.new(0, FLOOR_TOP + FRONT_OPEN_TOP_Y + (BLD_H - FRONT_OPEN_TOP_Y)/2, FRONT_Z),
-    Color = METAL_BLUEGRAY, Material = Enum.Material.CorrugatedMetal,
+    Name = "FrontTopFascia",
+    Size = Vector3.new(BLD_W, 1, 0.4),
+    CFrame = CFrame.new(0, FLOOR_TOP + BLD_H - 0.5, BLD_D/2 + 0.5),
+    Color = DUTCH_BLUE, Material = Enum.Material.SmoothPlastic,
 })
 -- Welcome doormat at the center of the open front, marking the entrance.
 do
@@ -579,7 +565,7 @@ do
     local welcomeBand = mkPart({
         Name = "WalkUpWelcome",
         Size = Vector3.new(12, 1.4, 0.2),
-        CFrame = CFrame.new(-18, FLOOR_TOP + FRONT_OPEN_TOP_Y + 0.7, BLD_D/2 + 0.6),
+        CFrame = CFrame.new(-18, FLOOR_TOP + BLD_H - 8, BLD_D/2 + 0.6),
         Color = DUTCH_BLUE, Material = Enum.Material.SmoothPlastic,
     })
     addSurfaceText(welcomeBand, Enum.NormalId.Front, "WELCOME BACK BESTIE", Enum.Font.GothamBlack, DUTCH_YELLOW, DUTCH_BLUE)
@@ -613,7 +599,7 @@ do
         Color = CREAM, Material = Enum.Material.Marble,
         Tags = {"HandoffWindow"},
     })
-    addLabel(handoff, "Hand-Off Window", "Press E to deliver drink", DUTCH_ORANGE)
+    addLabel(handoff, "HAND-OFF WINDOW", "Press E to serve order", DUTCH_ORANGE)
     addPrompt(handoff, "Drive-Thru Window", "Hand Off")
     -- Top SurfaceGui showing arrow + text (visible from above)
     addSurfaceText(handoff, Enum.NormalId.Top, "→ HAND OFF HERE →", Enum.Font.GothamBlack, WHITE, DUTCH_ORANGE)
@@ -636,29 +622,21 @@ local COUNTER_FRONT_Z = -BLD_D/2 + 5    -- front face of counter
 local COUNTER_Z       = -BLD_D/2 + 4    -- counter center
 local COUNTER_TOP_Y   = FLOOR_TOP + 3
 
--- Back counter is split in two: a LEFT counter (cups + bases, x=-29 to -3)
--- and a RIGHT counter (toppings + lid, x=+20 to +30). The 23-stud gap in
--- between hosts the wall-mounted single-row syrup wall.
-local LEFT_COUNTER_X1, LEFT_COUNTER_X2 = -29, -3
-local RIGHT_COUNTER_X1, RIGHT_COUNTER_X2 = 20, 30
-local function backCounterSegment(name, x1, x2)
-    local w = x2 - x1
-    local cx = (x1 + x2)/2
-    mkPart({
-        Name = name .. "Body",
-        Size = Vector3.new(w, 3, 3),
-        CFrame = CFrame.new(cx, FLOOR_TOP + 1.5, COUNTER_Z),
-        Color = Color3.fromRGB(70, 50, 35), Material = Enum.Material.Wood,
-    })
-    mkPart({
-        Name = name .. "Top",
-        Size = Vector3.new(w + 0.2, 0.2, 3.4),
-        CFrame = CFrame.new(cx, COUNTER_TOP_Y, COUNTER_Z),
-        Color = CREAM, Material = Enum.Material.Marble,
-    })
-end
-backCounterSegment("LeftBackCounter",  LEFT_COUNTER_X1,  LEFT_COUNTER_X2)
-backCounterSegment("RightBackCounter", RIGHT_COUNTER_X1, RIGHT_COUNTER_X2)
+-- Single continuous back counter spanning the full interior. Hosts cups,
+-- bases, toppings, and lid in left-to-right order. Syrup pumps live on the
+-- LEFT WALL now, not on the back counter.
+mkPart({
+    Name = "BackCounterBody",
+    Size = Vector3.new(BLD_W - 6, 3, 3),
+    CFrame = CFrame.new(0, FLOOR_TOP + 1.5, COUNTER_Z),
+    Color = Color3.fromRGB(70, 50, 35), Material = Enum.Material.Wood,
+})
+mkPart({
+    Name = "BackCounterTop",
+    Size = Vector3.new(BLD_W - 5.5, 0.2, 3.4),
+    CFrame = CFrame.new(0, COUNTER_TOP_Y, COUNTER_Z),
+    Color = CREAM, Material = Enum.Material.Marble,
+})
 
 -- ============================================================
 -- CUP TOWERS (FAR LEFT) — vertical cylinders, three heights
@@ -673,7 +651,7 @@ local function cupTower(x, sizeName, height, tag, frontTextSize)
         Color = WHITE, Material = Enum.Material.Plastic,
         Tags = {tag},
     })
-    addLabel(cyl, sizeName .. " Cups", "Press E to grab cup", DUTCH_BLUE)
+    addLabel(cyl, "CUPS - " .. sizeName:upper(), "Press E to grab cup", DUTCH_BLUE)
     addPrompt(cyl, sizeName .. " Cup Tower", "Grab " .. sizeName .. " Cup")
     -- Cylinders don't have a usable flat front for SurfaceGui, so add a small
     -- flat sign block in front of the tower (faces +Z toward player).
@@ -716,7 +694,7 @@ do
         CFrame = CFrame.new(x, COUNTER_TOP_Y + 1, COUNTER_Z + 1.8),
         Color = Color3.fromRGB(120, 80, 50), Material = Enum.Material.Wood,
     })
-    addLabel(base, "Espresso Machine", "Press E to pull shots", DUTCH_BLUE)
+    addLabel(base, "ESPRESSO MACHINE", "Press E to pull shots", DUTCH_BLUE)
     addPrompt(base, "Espresso Machine", "Pull Shots")
     addSurfaceText(base, Enum.NormalId.Front, "ESPRESSO", Enum.Font.GothamBlack, DUTCH_YELLOW, Color3.fromRGB(50, 50, 58))
 end
@@ -736,7 +714,7 @@ do
         CFrame = CFrame.new(x, COUNTER_TOP_Y + 0.6, COUNTER_Z + 1.2),
         Color = Color3.fromRGB(180, 180, 200), Material = Enum.Material.Metal,
     })
-    addLabel(tap, "Blue Rebel Tap", "Press E to fill", DUTCH_BLUE)
+    addLabel(tap, "BLUE REBEL TAP", "Press E to fill cup", DUTCH_BLUE)
     addPrompt(tap, "Blue Rebel Tap", "Fill Cup")
     local sign = mkPart({
         Name = "RebelTapSign",
@@ -761,7 +739,7 @@ do
         CFrame = CFrame.new(x, COUNTER_TOP_Y + 1, COUNTER_Z + 1.6),
         Color = Color3.fromRGB(60, 40, 25), Material = Enum.Material.Metal,
     })
-    addLabel(brewer, "Tea Brewer", "Press E to brew", DUTCH_BLUE)
+    addLabel(brewer, "TEA BREWER", "Press E to brew tea", DUTCH_BLUE)
     addPrompt(brewer, "Tea Brewer", "Brew Tea")
     addSurfaceText(brewer, Enum.NormalId.Front, "TEA", Enum.Font.GothamBlack, CREAM, Color3.fromRGB(120, 80, 45))
 end
@@ -781,7 +759,7 @@ do
         CFrame = CFrame.new(x, COUNTER_TOP_Y + 0.5, COUNTER_Z + 1.4),
         Color = Color3.fromRGB(180, 180, 200), Material = Enum.Material.Metal,
     })
-    addLabel(tank, "Lemonade", "Press E to pour", DUTCH_BLUE)
+    addLabel(tank, "LEMONADE DISPENSER", "Press E to pour", DUTCH_BLUE)
     addPrompt(tank, "Lemonade Dispenser", "Pour Lemonade")
     local sign = mkPart({
         Name = "LemonadeSign",
@@ -806,14 +784,15 @@ do
         CFrame = CFrame.new(x, COUNTER_TOP_Y + 2.5, COUNTER_Z + 1.1) * CFrame.Angles(math.rad(20), 0, 0),
         Color = Color3.fromRGB(200, 200, 220), Material = Enum.Material.Metal,
     })
-    addLabel(steamer, "Milk Steamer", "Press E to steam", DUTCH_BLUE)
+    addLabel(steamer, "MILK STEAMER", "Press E to steam milk", DUTCH_BLUE)
     addPrompt(steamer, "Milk Steamer", "Steam Milk")
     addSurfaceText(steamer, Enum.NormalId.Front, "MILK", Enum.Font.GothamBlack, DUTCH_BLUE, WHITE)
 end
 
 -- ============================================================
--- SYRUP WALL (CENTER) — 12 pumps, 2 rows of 6, wall-mounted
--- Each pump = colored cylinder body + small ball cap on top
+-- SYRUP WALL — 12 pumps in a single line along the LEFT WALL
+-- (interior side at x ≈ -28.5), 3-stud spacing, waist height.
+-- Order matches the spec: vanilla → lavender.
 -- ============================================================
 do
     local SYRUPS = {
@@ -823,95 +802,114 @@ do
         {name = "White Chocolate", color = Color3.fromRGB(245, 230, 200)},
         {name = "Hazelnut",        color = Color3.fromRGB(150, 100, 60)},
         {name = "Irish Cream",     color = Color3.fromRGB(220, 200, 160)},
-        {name = "Macadamia Nut",   color = Color3.fromRGB(220, 190, 140)},
-        {name = "Coconut",         color = Color3.fromRGB(255, 250, 240)},
-        {name = "Strawberry",      color = Color3.fromRGB(220, 60,  90)},
         {name = "Peach",           color = Color3.fromRGB(255, 180, 130)},
-        {name = "Blue Raspberry",  color = Color3.fromRGB(40,  120, 220)},
-        {name = "Lime",            color = Color3.fromRGB(120, 220, 80)},
+        {name = "Strawberry",      color = Color3.fromRGB(220, 60,  90)},
+        {name = "Coconut",         color = Color3.fromRGB(255, 250, 240)},
+        {name = "Raspberry",       color = Color3.fromRGB(180, 30,  80)},
+        {name = "Salted Caramel",  color = Color3.fromRGB(180, 110, 60)},
+        {name = "Lavender",        color = Color3.fromRGB(190, 160, 220)},
     }
-    -- Single horizontal row of 12 pumps at waist height, 2 stud spacing.
-    -- Sits in the gap between LEFT and RIGHT back counters.
-    local SHELF_W      = 24
-    local SHELF_X      = 8                              -- center: gap is x=-3 to x=+19, midpoint 8
-    local SHELF_Z      = -BLD_D/2 + 1.6                 -- just in front of back wall
-    local SHELF_TOP_Y  = 3                              -- waist height — top of shelf
-    local PUMP_SPACING = 2
-    local PUMP_Y       = SHELF_TOP_Y + 0.8              -- pump cylinder center (1.6 tall)
+    -- All 12 pumps along the LEFT WALL (interior at x ≈ -28.5), 3 stud
+    -- spacing, waist height. Pumps run from back-left (z=-13) toward the
+    -- open front (z=+20). Shelf and Dutch-Bros-blue backing panel mounted
+    -- on the left wall behind them.
+    local PUMP_SPACING = 3
+    local PUMP_X       = -28.5            -- 1 stud out from wall surface (-29.5)
+    local PUMP_FIRST_Z = -13              -- front-most pump's z is +20 (back-most -13)
+    local PUMP_Y       = 3.8              -- cylinder center; bottom at 3 = waist height
+    local SHELF_TOP_Y  = 3                -- top of shelf
+    local SHELF_LEN    = (#SYRUPS - 1) * PUMP_SPACING + 4  -- with margin
 
-    -- Wall-mounted backing panel behind the shelf
+    -- Dutch Bros blue backing panel mounted on the left wall behind the pumps.
     mkPart({
-        Name = "SyrupRackBackboard",
-        Size = Vector3.new(SHELF_W, 5.5, 0.4),
-        CFrame = CFrame.new(SHELF_X, SHELF_TOP_Y + 2.5, -BLD_D/2 + 1),
-        Color = Color3.fromRGB(50, 35, 20), Material = Enum.Material.Wood,
+        Name = "SyrupBackboard",
+        Size = Vector3.new(0.4, 5, SHELF_LEN),
+        CFrame = CFrame.new(-BLD_W/2 + 0.8, SHELF_TOP_Y + 2.5,
+                            PUMP_FIRST_Z + (#SYRUPS - 1) * PUMP_SPACING / 2),
+        Color = DUTCH_BLUE, Material = Enum.Material.SmoothPlastic,
     })
-    -- Long horizontal shelf the pumps stand on
+    -- Wood shelf (pumps stand on this)
     mkPart({
-        Name = "SyrupRackShelf",
-        Size = Vector3.new(SHELF_W, 0.4, 1.4),
-        CFrame = CFrame.new(SHELF_X, SHELF_TOP_Y - 0.2, SHELF_Z),
+        Name = "SyrupShelf",
+        Size = Vector3.new(1.4, 0.4, SHELF_LEN),
+        CFrame = CFrame.new(-BLD_W/2 + 1.7, SHELF_TOP_Y - 0.2,
+                            PUMP_FIRST_Z + (#SYRUPS - 1) * PUMP_SPACING / 2),
         Color = Color3.fromRGB(40, 28, 16), Material = Enum.Material.Wood,
     })
-    -- "SYRUPS" header sign mounted on the backboard
+    -- "SYRUPS" header sign on the backboard, near the back end of the rack
     local headerSign = mkPart({
         Name = "SyrupRackHeaderSign",
-        Size = Vector3.new(SHELF_W - 2, 1.2, 0.2),
-        CFrame = CFrame.new(SHELF_X, SHELF_TOP_Y + 5, -BLD_D/2 + 0.8),
+        Size = Vector3.new(0.2, 1.4, 6),
+        CFrame = CFrame.new(-BLD_W/2 + 0.6, SHELF_TOP_Y + 5.2, PUMP_FIRST_Z + 4),
         Color = ACCENT_PINK, Material = Enum.Material.SmoothPlastic,
     })
-    addSurfaceText(headerSign, Enum.NormalId.Front, "SYRUPS", Enum.Font.GothamBlack, WHITE, ACCENT_PINK)
-    -- Floating BillboardGui for the rack as a whole
-    local headerAnchor = mkPart({
-        Name = "SyrupRackHeader",
-        Size = Vector3.new(0.2, 0.2, 0.2),
-        CFrame = CFrame.new(SHELF_X, SHELF_TOP_Y + 6.5, -BLD_D/2 + 1),
-        Transparency = 1, CanCollide = false,
-    })
-    addLabel(headerAnchor, "Syrup Wall", "Press E on a bottle to add", ACCENT_PINK)
+    addSurfaceText(headerSign, Enum.NormalId.Right, "SYRUPS", Enum.Font.GothamBlack, WHITE, ACCENT_PINK)
 
-    -- 12 pumps in a single horizontal row
-    local startX = SHELF_X - (#SYRUPS - 1) * PUMP_SPACING / 2
+    -- 12 pumps in a single line, running back-to-front along Z
     for i, syrup in ipairs(SYRUPS) do
-        local bx = startX + (i - 1) * PUMP_SPACING
+        local bz = PUMP_FIRST_Z + (i - 1) * PUMP_SPACING
         local body = mkPart({
             Name = "SyrupBottle_" .. syrup.name:gsub("%s+", ""),
             Shape = Enum.PartType.Cylinder,
             Size = Vector3.new(1.6, 0.7, 0.7),
-            CFrame = CFrame.new(bx, PUMP_Y, SHELF_Z) * CFrame.Angles(0, 0, math.rad(90)),
+            CFrame = CFrame.new(PUMP_X, PUMP_Y, bz) * CFrame.Angles(0, 0, math.rad(90)),
             Color = syrup.color, Material = Enum.Material.Glass,
             Tags = {"SyrupPump"},
             Attributes = {SyrupName = syrup.name},
         })
-        addPrompt(body, syrup.name .. " Syrup", "Add " .. syrup.name)
+        addPrompt(body, syrup.name:upper() .. " SYRUP", "Add " .. syrup.name)
         mkPart({
             Name = "SyrupCap_" .. syrup.name:gsub("%s+", ""),
             Shape = Enum.PartType.Ball,
             Size = Vector3.new(0.6, 0.6, 0.6),
-            CFrame = CFrame.new(bx, PUMP_Y + 1, SHELF_Z),
+            CFrame = CFrame.new(PUMP_X, PUMP_Y + 1, bz),
             Color = syrup.color:Lerp(BLACK, 0.4),
             Material = Enum.Material.SmoothPlastic,
         })
+        -- Each pump gets its own two-line floating label, 2 studs above it
         local bb = Instance.new("BillboardGui")
         bb.Adornee = body
-        bb.Size = UDim2.new(0, 100, 0, 24)
-        bb.StudsOffset = Vector3.new(0, 1.6, 0)
+        bb.Size = UDim2.new(0, 180, 0, 56)
+        bb.StudsOffset = Vector3.new(0, 2, 0)
         bb.AlwaysOnTop = true
         bb.LightInfluence = 0
-        bb.MaxDistance = 35
+        bb.MaxDistance = 60
         bb.Parent = body
-        local lbl = Instance.new("TextLabel")
-        lbl.Size = UDim2.fromScale(1, 1)
-        lbl.BackgroundColor3 = BLACK
-        lbl.BackgroundTransparency = 0.25
-        lbl.Text = syrup.name
-        lbl.Font = Enum.Font.GothamBlack
-        lbl.TextScaled = true
-        lbl.TextColor3 = WHITE
-        lbl.Parent = bb
-        local c = Instance.new("UICorner")
-        c.CornerRadius = UDim.new(0, 4)
-        c.Parent = lbl
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.fromScale(1, 1)
+        frame.BackgroundColor3 = BLACK
+        frame.BackgroundTransparency = 0.3
+        frame.BorderSizePixel = 0
+        frame.Parent = bb
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 8)
+        corner.Parent = frame
+        local accent = Instance.new("Frame")
+        accent.Size = UDim2.new(1, 0, 0, 4)
+        accent.BackgroundColor3 = ACCENT_PINK
+        accent.BorderSizePixel = 0
+        accent.Parent = frame
+        local accentCorner = Instance.new("UICorner")
+        accentCorner.CornerRadius = UDim.new(0, 8)
+        accentCorner.Parent = accent
+        local title = Instance.new("TextLabel")
+        title.Size = UDim2.new(1, -8, 0, 20)
+        title.Position = UDim2.fromOffset(4, 8)
+        title.BackgroundTransparency = 1
+        title.Text = syrup.name:upper() .. " SYRUP"
+        title.Font = Enum.Font.GothamBlack
+        title.TextSize = 16
+        title.TextColor3 = WHITE
+        title.Parent = frame
+        local sub = Instance.new("TextLabel")
+        sub.Size = UDim2.new(1, -8, 0, 18)
+        sub.Position = UDim2.fromOffset(4, 32)
+        sub.BackgroundTransparency = 1
+        sub.Text = "Press E to add to cup"
+        sub.Font = Enum.Font.GothamSemibold
+        sub.TextSize = 12
+        sub.TextColor3 = DUTCH_YELLOW
+        sub.Parent = frame
     end
 end
 
@@ -927,7 +925,7 @@ local function toppingSphere(x, name, color, tagAttr)
         Color = color, Material = Enum.Material.SmoothPlastic,
         Tags = {"ToppingStation"}, Attributes = {ToppingName = tagAttr},
     })
-    addLabel(ball, name, "Press E to add", ACCENT_GREEN)
+    addLabel(ball, name:upper(), "Press E to add topping", ACCENT_GREEN)
     addPrompt(ball, name, "Add " .. name)
     -- Front sign block (since spheres don't have flat faces)
     local sign = mkPart({
@@ -938,9 +936,9 @@ local function toppingSphere(x, name, color, tagAttr)
     })
     addSurfaceText(sign, Enum.NormalId.Front, name:upper(), Enum.Font.GothamBlack, WHITE, ACCENT_GREEN)
 end
-toppingSphere(22, "Whipped Cream", WHITE,                          "Whipped Cream")
-toppingSphere(24, "Boba",          Color3.fromRGB(50, 30, 25),     "Boba")
-toppingSphere(26, "Soft Top",      Color3.fromRGB(245, 240, 230),  "Soft Top")
+toppingSphere(5,  "Whipped Cream", WHITE,                          "Whipped Cream")
+toppingSphere(8,  "Boba",          Color3.fromRGB(50, 30, 25),     "Boba")
+toppingSphere(11, "Soft Top",      Color3.fromRGB(245, 240, 230),  "Soft Top")
 
 -- ============================================================
 -- LID STATION — stack of flat cylinders (looks like stacked lids)
@@ -952,7 +950,7 @@ do
             Name = "LidDisc_" .. i,
             Shape = Enum.PartType.Cylinder,
             Size = Vector3.new(0.18, 1.8, 1.8),
-            CFrame = CFrame.new(29, COUNTER_TOP_Y + 0.18 + (i - 1) * 0.18, COUNTER_Z) * CFrame.Angles(0, 0, math.rad(90)),
+            CFrame = CFrame.new(14, COUNTER_TOP_Y + 0.18 + (i - 1) * 0.18, COUNTER_Z) * CFrame.Angles(0, 0, math.rad(90)),
             Color = Color3.fromRGB(40, 40, 50), Material = Enum.Material.SmoothPlastic,
         })
         if i == 1 then
@@ -960,12 +958,12 @@ do
             lidStack = part
         end
     end
-    addLabel(lidStack, "Lid Dispenser", "Press E to seal cup", ACCENT_GRAY)
+    addLabel(lidStack, "LID STATION", "Press E to seal cup", ACCENT_GRAY)
     addPrompt(lidStack, "Lid Dispenser", "Seal Cup")
     local sign = mkPart({
         Name = "LidStationSign",
         Size = Vector3.new(2.2, 0.7, 0.2),
-        CFrame = CFrame.new(29, COUNTER_TOP_Y + 0.2, COUNTER_FRONT_Z + 1.5),
+        CFrame = CFrame.new(14, COUNTER_TOP_Y + 0.2, COUNTER_FRONT_Z + 1.5),
         Color = ACCENT_GRAY, Material = Enum.Material.SmoothPlastic,
     })
     addSurfaceText(sign, Enum.NormalId.Front, "LIDS", Enum.Font.GothamBlack, WHITE, ACCENT_GRAY)
@@ -988,7 +986,7 @@ do
         Color = Color3.fromRGB(120, 80, 50), Material = Enum.Material.Fabric,
         Tags = {"SleeveStation"},
     })
-    addLabel(sleeve, "Sleeves", "Press E for cup sleeve", ACCENT_GRAY)
+    addLabel(sleeve, "SLEEVES", "Press E to add sleeve", ACCENT_GRAY)
     addPrompt(sleeve, "Sleeves", "Add Sleeve")
     addSurfaceText(sleeve, Enum.NormalId.Front, "SLEEVES", Enum.Font.GothamBlack, CREAM, Color3.fromRGB(120, 80, 50))
 end
@@ -1004,7 +1002,7 @@ do
         Color = Color3.fromRGB(50, 50, 55), Material = Enum.Material.Metal,
         Tags = {"TrashCan"},
     })
-    addLabel(trash, "Trash", "Press E to discard cup", ACCENT_RED)
+    addLabel(trash, "TRASH", "Press E to discard cup", ACCENT_RED)
     addPrompt(trash, "Trash", "Discard Cup")
     addSurfaceText(trash, Enum.NormalId.Front, "TRASH", Enum.Font.GothamBlack, WHITE, ACCENT_RED)
 end
@@ -1015,7 +1013,7 @@ end
 -- ============================================================
 do
     local arrowZ = -8     -- player walks in front of counter; arrows at z = -8
-    local positions = {-24, -16, -8, 0, 8, 16, 24}
+    local positions = {-23, -18, -10, -2, 4, 9, 14, 22}
     for i, x in ipairs(positions) do
         local arrow = mkPart({
             Name = "FlowArrow_" .. i,

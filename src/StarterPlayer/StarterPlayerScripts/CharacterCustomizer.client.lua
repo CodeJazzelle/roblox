@@ -11,6 +11,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local EquipItemEvent = Remotes:WaitForChild("EquipItem")
@@ -134,9 +135,9 @@ subtitle.TextSize = 14
 subtitle.TextColor3 = Color3.fromRGB(220, 220, 230)
 subtitle.Parent = frame
 
--- Avatar preview pane (left side). Uses ViewportFrame to render the live character.
+-- Avatar preview pane (left 40%). Uses ViewportFrame to render the live character.
 local previewPane = Instance.new("Frame")
-previewPane.Size = UDim2.new(0.36, -16, 1, -180)
+previewPane.Size = UDim2.new(0.40, -16, 1, -180)
 previewPane.Position = UDim2.fromOffset(8, 96)
 previewPane.BackgroundColor3 = Color3.fromRGB(20, 22, 28)
 previewPane.BorderSizePixel = 0
@@ -161,10 +162,10 @@ previewLabel.TextSize = 14
 previewLabel.TextColor3 = Color3.new(1, 1, 1)
 previewLabel.Parent = previewPane
 
--- Tab bar + list (right side)
+-- Tab bar + list (right 60%)
 local rightPane = Instance.new("Frame")
-rightPane.Size = UDim2.new(0.64, -16, 1, -180)
-rightPane.Position = UDim2.new(0.36, 8, 0, 96)
+rightPane.Size = UDim2.new(0.60, -16, 1, -180)
+rightPane.Position = UDim2.new(0.40, 8, 0, 96)
 rightPane.BackgroundTransparency = 1
 rightPane.Parent = frame
 
@@ -268,6 +269,12 @@ local function makeOption(item, slot)
         check.Text = "✓"
         stroke.Color = Color3.new(1, 1, 1)
         stroke.Thickness = 2
+        -- Update the live preview character. The function lives in the
+        -- viewport setup block below; expose it via _G to avoid a forward
+        -- declaration through the rest of the file.
+        if _G.CharacterCustomizerApplyLook then
+            _G.CharacterCustomizerApplyLook(slot, item)
+        end
     end)
 end
 
@@ -357,16 +364,33 @@ UserInputService.InputBegan:Connect(function(input, processed)
 end)
 
 -- ===== Live avatar preview =====
--- Mirrors the player's character into the ViewportFrame so they can see
--- equipment changes in real time. Re-clones whenever the character respawns.
+-- Clones the player's character into the ViewportFrame so equipment changes
+-- show in real time, and orbits the camera around it continuously. The
+-- previewClone reference is exposed so `applyPreviewLook` (called from the
+-- option-click handler) can color body parts to indicate selection.
+local previewClone
+local previewCenter = Vector3.new(0, 3, 0)
+local previewAngle = 0
+
 local function refreshPreview(character)
     if not character then return end
-    -- clear viewport
     for _, child in ipairs(viewport:GetChildren()) do
         if not child:IsA("Camera") then child:Destroy() end
     end
-    local clone = character:Clone()
-    clone.Parent = viewport
+    previewClone = character:Clone()
+    -- ViewportFrames don't run physics — anchor every part so the clone holds
+    -- pose, and strip any local scripts the character carries.
+    for _, descendant in ipairs(previewClone:GetDescendants()) do
+        if descendant:IsA("BasePart") then
+            descendant.Anchored = true
+        elseif descendant:IsA("Script") or descendant:IsA("LocalScript") then
+            descendant:Destroy()
+        end
+    end
+    previewClone.Parent = viewport
+
+    local hrp = previewClone:FindFirstChild("HumanoidRootPart")
+    previewCenter = hrp and hrp.Position or Vector3.new(0, 3, 0)
 
     local cam = viewport:FindFirstChildOfClass("Camera")
     if not cam then
@@ -374,12 +398,103 @@ local function refreshPreview(character)
         cam.Parent = viewport
     end
     viewport.CurrentCamera = cam
-
-    local hrp = clone:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        cam.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 1, 6), hrp.Position + Vector3.new(0, 1, 0))
-    end
 end
 
 if player.Character then refreshPreview(player.Character) end
 player.CharacterAdded:Connect(refreshPreview)
+
+-- Orbit the viewport camera around the preview character. ViewportFrames
+-- don't tick physics, so we drive the camera ourselves on RenderStepped.
+RunService.RenderStepped:Connect(function(dt)
+    if not previewClone or not previewClone.Parent then return end
+    local cam = viewport:FindFirstChildOfClass("Camera")
+    if not cam then return end
+    previewAngle += dt * 0.6
+    local r = 7
+    local lookAt = previewCenter + Vector3.new(0, 1, 0)
+    local eye = previewCenter + Vector3.new(math.cos(previewAngle) * r, 2, math.sin(previewAngle) * r)
+    cam.CFrame = CFrame.lookAt(eye, lookAt)
+end)
+
+-- Visual feedback when an option is clicked. Since we don't have real
+-- HumanoidDescription asset IDs hooked up, we just tint the preview's body
+-- parts (or attach a placeholder hair part) to indicate the selection.
+local HEAD_COLORS = {
+    head_classic     = Color3.fromRGB(255, 220, 180),
+    head_frog        = Color3.fromRGB(80,  180, 100),
+    head_cat         = Color3.fromRGB(200, 130, 80),
+    head_toaster     = Color3.fromRGB(180, 180, 200),
+    head_pumpkin     = Color3.fromRGB(255, 122, 0),
+    head_robot       = Color3.fromRGB(150, 150, 160),
+    head_dino        = Color3.fromRGB(60,  130, 80),
+    head_penguin     = Color3.fromRGB(40,  40,  50),
+    head_alien       = Color3.fromRGB(100, 220, 100),
+    head_marshmallow = Color3.fromRGB(255, 240, 230),
+    head_donut       = Color3.fromRGB(220, 150, 100),
+    head_cup         = Color3.fromRGB(0,   90,  171),
+}
+
+local BODY_TINTS = {
+    body_short   = {torso = Color3.fromRGB(255, 200, 100)},
+    body_average = {torso = Color3.fromRGB(120, 180, 220)},
+    body_tall    = {torso = Color3.fromRGB(150, 220, 150)},
+    body_round   = {torso = Color3.fromRGB(220, 140, 200)},
+    body_lanky   = {torso = Color3.fromRGB(220, 220, 120)},
+}
+
+local HAIR_PALETTE = {
+    Color3.fromRGB(40,  30,  20),    -- dark brown
+    Color3.fromRGB(180, 130, 60),    -- blonde
+    Color3.fromRGB(220, 50,  50),    -- red
+    Color3.fromRGB(20,  20,  20),    -- black
+    Color3.fromRGB(180, 180, 180),   -- gray
+    Color3.fromRGB(180, 80,  200),   -- purple
+    Color3.fromRGB(50,  100, 220),   -- blue
+    Color3.fromRGB(255, 122, 0),     -- orange
+}
+
+local function getOrCreateHairPart()
+    if not previewClone then return nil end
+    local existing = previewClone:FindFirstChild("PreviewHair")
+    if existing then return existing end
+    local head = previewClone:FindFirstChild("Head")
+    if not head then return nil end
+    local hairPart = Instance.new("Part")
+    hairPart.Name = "PreviewHair"
+    hairPart.Size = Vector3.new(2.2, 0.9, 2.2)
+    hairPart.Anchored = true
+    hairPart.CanCollide = false
+    hairPart.TopSurface = Enum.SurfaceType.Smooth
+    hairPart.BottomSurface = Enum.SurfaceType.Smooth
+    hairPart.Material = Enum.Material.SmoothPlastic
+    hairPart.CFrame = head.CFrame * CFrame.new(0, 0.65, 0)
+    hairPart.Parent = previewClone
+    return hairPart
+end
+
+local function applyPreviewLook(slot, item)
+    if not previewClone then return end
+    if slot == "Head" then
+        local head = previewClone:FindFirstChild("Head")
+        if head then
+            head.Color = HEAD_COLORS[item.id] or Color3.fromRGB(255, 220, 180)
+        end
+    elseif slot == "Hair" then
+        local hairPart = getOrCreateHairPart()
+        if hairPart then
+            local idx = (tonumber(string.match(item.id, "hair_(%d+)")) or 1)
+            hairPart.Color = HAIR_PALETTE[(idx - 1) % #HAIR_PALETTE + 1]
+        end
+    elseif slot == "Body" then
+        local tints = BODY_TINTS[item.id]
+        if tints then
+            local torso = previewClone:FindFirstChild("Torso") or previewClone:FindFirstChild("UpperTorso")
+            if torso and tints.torso then torso.Color = tints.torso end
+            local lower = previewClone:FindFirstChild("LowerTorso")
+            if lower and tints.torso then lower.Color = tints.torso end
+        end
+    end
+    -- Voice slot: no visible preview change (the audio identity is the change)
+end
+
+_G.CharacterCustomizerApplyLook = applyPreviewLook
