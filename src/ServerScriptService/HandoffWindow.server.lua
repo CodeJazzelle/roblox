@@ -55,10 +55,11 @@ local function setupWindow(part)
         if _G.ClearPlayerCup then _G.ClearPlayerCup(player) end
         HandoffResult:FireClient(player, success, payload)
         if success then
-            SoundManager:PlayAt("OrderComplete", part, 0.7)
-            SoundManager:PlayAt("TipEarned", part, 0.5)
+            -- Cash register dings for everyone nearby (broadcast).
+            SoundManager:PlayAt("cash_register_ding", part, 0.7)
+            SoundManager:PlayForPlayer(player, "tip_earned", nil, 0.5)
         else
-            SoundManager:PlayForPlayer(player, "WrongDrink", 0.6)
+            SoundManager:PlayForPlayer(player, "wrong_drink_buzz", nil, 0.6)
         end
     end)
 end

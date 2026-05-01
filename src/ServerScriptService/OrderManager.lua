@@ -1,5 +1,16 @@
 -- OrderManager.lua
 -- Handles spawning customer orders and validating finished drinks.
+--
+-- Per-order timers removed for accessibility and shift-based scoring.
+-- The only timer is the round timer. Orders persist for the entire
+-- round and only leave the queue when the player completes them
+-- (correctly served at the hand-off window) or when the round ends.
+-- Wrong-drink submissions still fail the targeted order so the queue
+-- card disappears; nothing else fails an order on its own.
+--
+-- Active order count is capped at MAX_ACTIVE_ORDERS to keep the queue
+-- UI manageable. New orders past the cap are skipped until at least
+-- one of the existing orders is completed.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
@@ -25,6 +36,7 @@ OrderManager.CurrentDifficulty = 1
 OrderManager.OrderCompleted = Instance.new("BindableEvent")
 
 local SECRET_CHANCE = 0.15
+local MAX_ACTIVE_ORDERS = 8
 
 function OrderManager:StartRound(durationSeconds)
     self.RoundActive = true
@@ -53,7 +65,25 @@ function OrderManager:GetActiveOrderCount()
     return n
 end
 
+-- Round-end cleanup: clears every active order and dismisses the queue
+-- cards client-side. This intentionally fires OrderFailedEvent (the
+-- client uses it as a "remove card" signal) but does NOT route through
+-- OrderManager:FailOrder, so no per-order failure consequences fire and
+-- nothing affects player stats or any (future) combo system.
+function OrderManager:ClearAllOrders(reason)
+    for orderID in pairs(self.ActiveOrders) do
+        OrderFailedEvent:FireAllClients(orderID, reason or "Round ended")
+    end
+    self.ActiveOrders = {}
+end
+
 function OrderManager:SpawnOrder()
+    -- Honor the active-order cap. The caller (a customer system) can
+    -- detect a nil return and skip-spawn the carrying car/NPC.
+    if self:GetActiveOrderCount() >= MAX_ACTIVE_ORDERS then
+        return nil
+    end
+
     local orderID = self.NextOrderID
     self.NextOrderID += 1
 

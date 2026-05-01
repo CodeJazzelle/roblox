@@ -27,7 +27,8 @@ DrinkRecipes.Menu = {
     Caramelizer = {
         displayName = "Caramelizer",
         base = "Espresso",
-        syrups = {"Caramel", "Chocolate Macchiato"},
+        -- Was Chocolate Macchiato; substituted to Chocolate (on the wall).
+        syrups = {"Caramel", "Chocolate"},
         toppings = {"Caramel Drizzle"},
         defaultSize = "Medium",
         basePrice = 5,
@@ -36,7 +37,8 @@ DrinkRecipes.Menu = {
     Annihilator = {
         displayName = "Annihilator",
         base = "Espresso",
-        syrups = {"Chocolate Macchiato", "Macadamia Nut"},
+        -- Was Chocolate Macchiato; substituted to Chocolate (on the wall).
+        syrups = {"Chocolate", "Macadamia Nut"},
         toppings = {},
         defaultSize = "Medium",
         basePrice = 5,
@@ -45,7 +47,10 @@ DrinkRecipes.Menu = {
     ["911"] = {
         displayName = "911",
         base = "Espresso",
-        syrups = {"Irish Cream", "Half and Half"},
+        -- Was Irish Cream + Half and Half; Half and Half is a dairy
+        -- mixer, not a syrup pump on the wall — dropped. The 6 extra
+        -- shots still make this a Tier 4 ($10) order.
+        syrups = {"Irish Cream"},
         toppings = {},
         defaultSize = "Large",
         basePrice = 6,
@@ -102,7 +107,10 @@ DrinkRecipes.Menu = {
     OGGummybear = {
         displayName = "OG Gummybear",
         base = "Blue Rebel",
-        syrups = {"Lime", "Pomegranate", "Strawberry"},
+        -- Was Lime + Pomegranate + Strawberry; Lime + Pomegranate aren't
+        -- on the wall, swapped to Coconut + Raspberry as closest fruit-y
+        -- substitutes.
+        syrups = {"Coconut", "Raspberry", "Strawberry"},
         toppings = {},
         defaultSize = "Medium",
         basePrice = 5,
@@ -111,7 +119,8 @@ DrinkRecipes.Menu = {
     SharkAttack = {
         displayName = "Shark Attack",
         base = "Blue Rebel",
-        syrups = {"Coconut", "Blue Raspberry"},
+        -- Was Blue Raspberry; only regular Raspberry is on the wall.
+        syrups = {"Coconut", "Raspberry"},
         toppings = {},
         defaultSize = "Medium",
         basePrice = 5,
@@ -120,7 +129,9 @@ DrinkRecipes.Menu = {
     Aftershock = {
         displayName = "Aftershock",
         base = "Blue Rebel",
-        syrups = {"Peach", "Strawberry", "Lime"},
+        -- Was Peach + Strawberry + Lime; Lime not on the wall, swapped
+        -- for Coconut.
+        syrups = {"Peach", "Strawberry", "Coconut"},
         toppings = {},
         defaultSize = "Medium",
         basePrice = 5,
@@ -175,13 +186,12 @@ DrinkRecipes.Menu = {
     },
 }
 
+-- Must match the 12 pumps placed on the back wall in BuildStand.server.lua.
+-- Order is left-to-right along the wall.
 DrinkRecipes.AllSyrups = {
-    "Vanilla", "White Chocolate", "Chocolate", "Chocolate Macchiato",
-    "Caramel", "Salted Caramel", "Hazelnut", "Almond",
-    "Macadamia Nut", "Irish Cream", "Half and Half",
-    "Peach", "Strawberry", "Raspberry", "Blue Raspberry",
-    "Lime", "Pomegranate", "Coconut", "Lavender",
-    "Watermelon", "Marshmallow", "Cotton Candy", "Gingerbread",
+    "Vanilla", "Caramel", "Chocolate", "White Chocolate",
+    "Macadamia Nut", "Hazelnut", "Irish Cream", "Peach",
+    "Strawberry", "Coconut", "Raspberry", "Salted Caramel",
 }
 
 DrinkRecipes.AllToppings = {

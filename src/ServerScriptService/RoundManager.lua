@@ -20,7 +20,7 @@ function RoundManager:StartRound()
     self.TotalTips = 0
     RoundStartedEvent:FireAllClients(self.RoundLength)
     OrderManager:StartRound(self.RoundLength)
-    SoundManager:PlayAt("RoundStart", nil, 0.5)
+    SoundManager:PlayAt("round_start", nil, 0.5)
 
     task.delay(self.RoundLength, function()
         self:EndRound()
@@ -38,7 +38,12 @@ function RoundManager:EndRound()
     if self.TotalTips >= 200 then stars = 3 end
 
     RoundEndedEvent:FireAllClients(self.TotalTips, stars)
-    SoundManager:PlayAt("RoundEnd", nil, 0.5)
+    SoundManager:PlayAt("round_end", nil, 0.5)
+
+    -- Clear any orders still in the queue so the UI doesn't keep stale
+    -- cards visible during the gap before the next round. Goes through
+    -- ClearAllOrders (NOT FailOrder) so no failure consequences fire.
+    OrderManager:ClearAllOrders("Round ended")
 end
 
 task.spawn(function()

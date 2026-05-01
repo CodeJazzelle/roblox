@@ -13,19 +13,19 @@ local SoundManager = require(script.Parent:WaitForChild("SoundManager"))
 -- Mapping tag → sound key for station SFX. Driver of all "interaction"
 -- audio so adding a new station means one entry here.
 local STATION_SOUND = {
-    CupTower_Small     = "CupGrab",
-    CupTower_Medium    = "CupGrab",
-    CupTower_Large     = "CupGrab",
-    EspressoMachine    = "EspressoPull",
-    RebelTap           = "SyrupPump",
-    TeaBrewer          = "EspressoPull",
-    LemonadeDispenser  = "SyrupPump",
-    MilkSteamer        = "MilkSteam",
-    SyrupPump          = "SyrupPump",
-    ToppingStation     = "SyrupPump",
-    LidStation         = "LidClick",
-    SleeveStation      = "CupGrab",
-    TrashCan           = "Trash",
+    CupTower_Small     = "cup_grab",
+    CupTower_Medium    = "cup_grab",
+    CupTower_Large     = "cup_grab",
+    EspressoMachine    = "espresso_pull",
+    RebelTap           = "liquid_pour",
+    TeaBrewer          = "tea_pour",
+    LemonadeDispenser  = "liquid_pour",
+    MilkSteamer        = "milk_steam",
+    SyrupPump          = "syrup_pump",
+    ToppingStation     = "topping_add",
+    LidStation         = "lid_click",
+    SleeveStation      = "cup_grab",
+    TrashCan           = "trash_drop",
 }
 
 local PlayerCups = {}
@@ -71,8 +71,13 @@ local function bindTag(tag, action)
     if soundKey then
         wrapped = function(player, part)
             action(player, part)
+            -- Per-player sound (FireClient) so each player only hears their
+            -- own interactions, not everyone else's. 3D-positioned via the
+            -- station's part so audio fades with distance.
             if part and part:IsA("BasePart") then
-                SoundManager:PlayAt(soundKey, part, 0.5)
+                SoundManager:PlayForPlayer(player, soundKey, part, 0.5)
+            else
+                SoundManager:PlayForPlayer(player, soundKey, nil, 0.5)
             end
         end
     end

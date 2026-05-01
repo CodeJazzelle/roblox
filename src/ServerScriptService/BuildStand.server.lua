@@ -102,7 +102,10 @@ local function mkPart(props)
     return p
 end
 
-local function addLabel(part, title, subtitle, accentColor)
+-- maxDistance defaults to 12 (per-station labels only render up close so
+-- they don't pile into a "wall of black rectangles" from across the room).
+-- Pass a higher value for wayfinding labels like the hand-off window.
+local function addLabel(part, title, subtitle, accentColor, maxDistance)
     local bb = Instance.new("BillboardGui")
     bb.Name = "StationLabel"
     bb.Adornee = part
@@ -110,7 +113,7 @@ local function addLabel(part, title, subtitle, accentColor)
     bb.StudsOffset = Vector3.new(0, 4.5, 0)
     bb.AlwaysOnTop = true
     bb.LightInfluence = 0
-    bb.MaxDistance = 100
+    bb.MaxDistance = maxDistance or 12
     bb.Parent = part
 
     local frame = Instance.new("Frame")
@@ -612,7 +615,9 @@ do
         Color = CREAM, Material = Enum.Material.Marble,
         Tags = {"HandoffWindow"},
     })
-    addLabel(handoff, "HAND-OFF WINDOW", "Press E to serve order", DUTCH_ORANGE)
+    -- Wayfinding label: visible from across the kitchen so players know
+    -- where to deliver drinks.
+    addLabel(handoff, "HAND-OFF WINDOW", "Press E to serve order", DUTCH_ORANGE, 60)
     addPrompt(handoff, "Drive-Thru Window", "Hand Off")
     addSurfaceText(handoff, Enum.NormalId.Top, "→ HAND OFF HERE →", Enum.Font.GothamBlack, WHITE, DUTCH_ORANGE)
     -- big floor arrow pointing to the handoff
@@ -811,11 +816,18 @@ print("[BuildStand] Base machines built (5)")
 -- ============================================================
 do
     -- Order matches user spec exactly
+    -- 12 syrups, left-to-right along the back wall. This list is the
+    -- single source of truth for what syrups physically exist; the
+    -- DrinkRecipes.AllSyrups list and every recipe in DrinkRecipes.Menu
+    -- must stay synced with this. Lavender was dropped (least common
+    -- on real Dutch Bros menu) to make room for Macadamia Nut, which
+    -- the Cocomo / Dutch Mafia / Annihilator recipes require.
     local SYRUPS = {
         {name = "Vanilla",         color = Color3.fromRGB(255, 240, 200)},
         {name = "Caramel",         color = Color3.fromRGB(190, 120, 50)},
         {name = "Chocolate",       color = Color3.fromRGB(80,  45,  20)},
         {name = "White Chocolate", color = Color3.fromRGB(245, 230, 200)},
+        {name = "Macadamia Nut",   color = Color3.fromRGB(220, 195, 160)},
         {name = "Hazelnut",        color = Color3.fromRGB(150, 100, 60)},
         {name = "Irish Cream",     color = Color3.fromRGB(220, 200, 160)},
         {name = "Peach",           color = Color3.fromRGB(255, 180, 130)},
@@ -823,7 +835,6 @@ do
         {name = "Coconut",         color = Color3.fromRGB(255, 250, 240)},
         {name = "Raspberry",       color = Color3.fromRGB(180, 30,  80)},
         {name = "Salted Caramel",  color = Color3.fromRGB(180, 110, 60)},
-        {name = "Lavender",        color = Color3.fromRGB(190, 160, 220)},
     }
     local PUMP_SPACING = 3
     local PUMP_Y       = 3.8                -- cylinder center; bottom = 3 (waist)
@@ -875,14 +886,15 @@ do
             Color = syrup.color:Lerp(BLACK, 0.4),
             Material = Enum.Material.SmoothPlastic,
         })
-        -- Two-line label, 2 studs above each pump
+        -- Two-line label, 2 studs above each pump. Short MaxDistance so
+        -- the 12 syrup labels don't pile up in view from across the room.
         local bb = Instance.new("BillboardGui")
         bb.Adornee = body
         bb.Size = UDim2.new(0, 180, 0, 56)
         bb.StudsOffset = Vector3.new(0, 2, 0)
         bb.AlwaysOnTop = true
         bb.LightInfluence = 0
-        bb.MaxDistance = 60
+        bb.MaxDistance = 12
         bb.Parent = body
         local frame = Instance.new("Frame")
         frame.Size = UDim2.fromScale(1, 1)

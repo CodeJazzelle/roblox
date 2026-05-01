@@ -291,9 +291,9 @@ local function runCarLifecycle(car, color)
 
     if served then
         chatBubble(car, "Thanks bro! 🙌", 3)
-        SoundManager:PlayAt("CarHorn", car.PrimaryPart, 0.4)
+        SoundManager:PlayAt("car_horn", car.PrimaryPart, 0.4)
         task.wait(0.6)
-        SoundManager:PlayAt("CarHorn", car.PrimaryPart, 0.4)
+        SoundManager:PlayAt("car_horn", car.PrimaryPart, 0.4)
     else
         chatBubble(car, "Forget it. 😤", 3)
         -- Fail the dangling order so the queue card disappears
