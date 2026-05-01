@@ -349,19 +349,18 @@ mkPart({
 })
 
 -- Front wall: walk-up window cutout at x ∈ [-22, -12], y ∈ [3, 8]
+--             AND doorway cutout at x ∈ [-2, 6], y ∈ [0, 10]
+-- (Six segments total: left of WUW, above WUW, below WUW, between WUW and
+--  doorway, above doorway, right of doorway.)
 local FRONT_Z = BLD_D/2 - WALL_THICK/2
 local WUW_X1, WUW_X2 = -22, -12
 local WUW_Y1, WUW_Y2 = 3, 8
+local DOOR_X1, DOOR_X2 = -2, 6
+local DOOR_Y2 = 10
 mkPart({
     Name = "FrontWallLeftSeg",
     Size = Vector3.new(WUW_X1 - (-BLD_W/2), BLD_H, WALL_THICK),
     CFrame = CFrame.new(((-BLD_W/2) + WUW_X1)/2, FLOOR_TOP + BLD_H/2, FRONT_Z),
-    Color = METAL_BLUEGRAY, Material = Enum.Material.CorrugatedMetal,
-})
-mkPart({
-    Name = "FrontWallRightSeg",
-    Size = Vector3.new((BLD_W/2) - WUW_X2, BLD_H, WALL_THICK),
-    CFrame = CFrame.new((WUW_X2 + (BLD_W/2))/2, FLOOR_TOP + BLD_H/2, FRONT_Z),
     Color = METAL_BLUEGRAY, Material = Enum.Material.CorrugatedMetal,
 })
 mkPart({
@@ -376,6 +375,57 @@ mkPart({
     CFrame = CFrame.new((WUW_X1 + WUW_X2)/2, FLOOR_TOP + WUW_Y1/2, FRONT_Z),
     Color = METAL_BLUEGRAY, Material = Enum.Material.CorrugatedMetal,
 })
+mkPart({
+    Name = "FrontWallMidSeg",
+    Size = Vector3.new(DOOR_X1 - WUW_X2, BLD_H, WALL_THICK),
+    CFrame = CFrame.new((WUW_X2 + DOOR_X1)/2, FLOOR_TOP + BLD_H/2, FRONT_Z),
+    Color = METAL_BLUEGRAY, Material = Enum.Material.CorrugatedMetal,
+})
+mkPart({
+    Name = "FrontWallAboveDoor",
+    Size = Vector3.new(DOOR_X2 - DOOR_X1, BLD_H - DOOR_Y2, WALL_THICK),
+    CFrame = CFrame.new((DOOR_X1 + DOOR_X2)/2, FLOOR_TOP + DOOR_Y2 + (BLD_H - DOOR_Y2)/2, FRONT_Z),
+    Color = METAL_BLUEGRAY, Material = Enum.Material.CorrugatedMetal,
+})
+mkPart({
+    Name = "FrontWallRightSeg",
+    Size = Vector3.new((BLD_W/2) - DOOR_X2, BLD_H, WALL_THICK),
+    CFrame = CFrame.new((DOOR_X2 + (BLD_W/2))/2, FLOOR_TOP + BLD_H/2, FRONT_Z),
+    Color = METAL_BLUEGRAY, Material = Enum.Material.CorrugatedMetal,
+})
+-- Welcome doormat just inside the doorway
+do
+    local mat = mkPart({
+        Name = "WelcomeMat",
+        Size = Vector3.new(DOOR_X2 - DOOR_X1, 0.05, 4),
+        CFrame = CFrame.new((DOOR_X1 + DOOR_X2)/2, FLOOR_TOP + 0.05, BLD_D/2 - 3),
+        Color = DUTCH_ORANGE, Material = Enum.Material.Fabric,
+        CanCollide = false,
+    })
+    addSurfaceText(mat, Enum.NormalId.Top, "WELCOME", Enum.Font.GothamBlack, WHITE, DUTCH_ORANGE)
+end
+-- Floor strip leading from the spawn (cup-tower end) to the doorway, so
+-- the player has a visible path to the entrance.
+do
+    -- east-going strip from spawn (-26, -8) toward doorway alley (2, -8)
+    mkPart({
+        Name = "PathStripEast",
+        Size = Vector3.new(28, 0.05, 1.6),
+        CFrame = CFrame.new(-12, FLOOR_TOP + 0.04, -8),
+        Color = Color3.fromRGB(80, 90, 105),
+        Material = Enum.Material.SmoothPlastic,
+        CanCollide = false,
+    })
+    -- south-going strip from (2, -8) to (2, BLD_D/2 - 4) at the doorway
+    mkPart({
+        Name = "PathStripSouth",
+        Size = Vector3.new(1.6, 0.05, 22),
+        CFrame = CFrame.new(2, FLOOR_TOP + 0.04, 4),
+        Color = Color3.fromRGB(80, 90, 105),
+        Material = Enum.Material.SmoothPlastic,
+        CanCollide = false,
+    })
+end
 
 -- Right wall: drive-thru window cutout at z ∈ [-3, 7], y ∈ [3, 8]
 local RIGHT_X = BLD_W/2 - WALL_THICK/2

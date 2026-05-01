@@ -34,42 +34,42 @@ do
         "Anime Spikes", "Galaxy Tipped", "Rainbow Tips", "Frosted Tips",
     }
     for i, name in ipairs(names) do
-        table.insert(Hairstyles, {id = "hair_" .. i, name = name, assetId = 0})
+        table.insert(Hairstyles, {id = "hair_" .. i, name = name, icon = "💇"})
     end
 end
 
 local Heads = {
-    {id = "head_classic",     name = "Classic Bro"},
-    {id = "head_frog",        name = "Frog"},
-    {id = "head_cat",         name = "Cat"},
-    {id = "head_toaster",     name = "Toaster"},
-    {id = "head_pumpkin",     name = "Pumpkin"},
-    {id = "head_robot",       name = "Robot"},
-    {id = "head_dino",        name = "Dinosaur"},
-    {id = "head_penguin",     name = "Penguin"},
-    {id = "head_alien",       name = "Lil' Alien"},
-    {id = "head_marshmallow", name = "Marshmallow"},
-    {id = "head_donut",       name = "Donut"},
-    {id = "head_cup",         name = "Walking Cup"},
+    {id = "head_classic",     name = "Classic Bro",  icon = "😎"},
+    {id = "head_frog",        name = "Frog",         icon = "🐸"},
+    {id = "head_cat",         name = "Cat",          icon = "🐱"},
+    {id = "head_toaster",     name = "Toaster",      icon = "🍞"},
+    {id = "head_pumpkin",     name = "Pumpkin",      icon = "🎃"},
+    {id = "head_robot",       name = "Robot",        icon = "🤖"},
+    {id = "head_dino",        name = "Dinosaur",     icon = "🦖"},
+    {id = "head_penguin",     name = "Penguin",      icon = "🐧"},
+    {id = "head_alien",       name = "Lil' Alien",   icon = "👽"},
+    {id = "head_marshmallow", name = "Marshmallow",  icon = "🍢"},
+    {id = "head_donut",       name = "Donut",        icon = "🍩"},
+    {id = "head_cup",         name = "Walking Cup",  icon = "☕"},
 }
 
 local BodyTypes = {
-    {id = "body_short",   name = "Short"},
-    {id = "body_average", name = "Average"},
-    {id = "body_tall",    name = "Tall"},
-    {id = "body_round",   name = "Round"},
-    {id = "body_lanky",   name = "Lanky"},
+    {id = "body_short",   name = "Short",   icon = "🧒"},
+    {id = "body_average", name = "Average", icon = "🧍"},
+    {id = "body_tall",    name = "Tall",    icon = "🦒"},
+    {id = "body_round",   name = "Round",   icon = "🫧"},
+    {id = "body_lanky",   name = "Lanky",   icon = "🦴"},
 }
 
 local VoicePacks = {
-    {id = "voice_chill",   name = "Chill Bro"},
-    {id = "voice_hyper",   name = "Hyper Bro"},
-    {id = "voice_zen",     name = "Zen Bro"},
-    {id = "voice_pirate",  name = "Pirate Bro"},
-    {id = "voice_robot",   name = "Robo Bro"},
-    {id = "voice_cowboy",  name = "Cowboy Bro"},
-    {id = "voice_baby",    name = "Baby Bro"},
-    {id = "voice_grandma", name = "Grandma Bro"},
+    {id = "voice_chill",   name = "Chill Bro",   icon = "🌊"},
+    {id = "voice_hyper",   name = "Hyper Bro",   icon = "⚡"},
+    {id = "voice_zen",     name = "Zen Bro",     icon = "🧘"},
+    {id = "voice_pirate",  name = "Pirate Bro",  icon = "🏴"},
+    {id = "voice_robot",   name = "Robo Bro",    icon = "🤖"},
+    {id = "voice_cowboy",  name = "Cowboy Bro",  icon = "🤠"},
+    {id = "voice_baby",    name = "Baby Bro",    icon = "👶"},
+    {id = "voice_grandma", name = "Grandma Bro", icon = "👵"},
 }
 
 local TabConfig = {
@@ -184,7 +184,7 @@ listFrame.ScrollBarThickness = 6
 listFrame.Parent = rightPane
 
 local listLayout = Instance.new("UIGridLayout")
-listLayout.CellSize = UDim2.fromOffset(170, 56)
+listLayout.CellSize = UDim2.fromOffset(210, 64)
 listLayout.CellPadding = UDim2.fromOffset(8, 8)
 listLayout.Parent = listFrame
 
@@ -198,26 +198,76 @@ local function clearList()
 end
 
 local function makeOption(item, slot)
+    local isSelected = equipped[slot] == item.id
     local btn = Instance.new("TextButton")
-    btn.Text = item.name
-    btn.BackgroundColor3 = (equipped[slot] == item.id) and DUTCH_BLUE or Color3.fromRGB(48, 48, 56)
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.Font = Enum.Font.GothamMedium
-    btn.TextSize = 14
+    btn.Text = ""  -- layout uses child labels for icon/name/check
+    btn.BackgroundColor3 = isSelected and DUTCH_BLUE or Color3.fromRGB(48, 48, 56)
     btn.AutoButtonColor = true
+    btn.BorderSizePixel = 0
     btn.Parent = listFrame
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
+    corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = btn
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = isSelected and Color3.new(1, 1, 1) or Color3.fromRGB(70, 70, 80)
+    stroke.Thickness = isSelected and 2 or 1
+    stroke.Name = "OptionStroke"
+    stroke.Parent = btn
+
+    local icon = Instance.new("TextLabel")
+    icon.Name = "Icon"
+    icon.Size = UDim2.new(0, 44, 1, 0)
+    icon.Position = UDim2.fromOffset(8, 0)
+    icon.BackgroundTransparency = 1
+    icon.Text = item.icon or ""
+    icon.Font = Enum.Font.GothamBold
+    icon.TextSize = 26
+    icon.TextColor3 = Color3.new(1, 1, 1)
+    icon.Parent = btn
+
+    local name = Instance.new("TextLabel")
+    name.Name = "Name"
+    name.Size = UDim2.new(1, -90, 1, 0)
+    name.Position = UDim2.fromOffset(56, 0)
+    name.BackgroundTransparency = 1
+    name.Text = item.name
+    name.Font = Enum.Font.GothamBold
+    name.TextSize = 16
+    name.TextColor3 = Color3.new(1, 1, 1)
+    name.TextXAlignment = Enum.TextXAlignment.Left
+    name.TextTruncate = Enum.TextTruncate.AtEnd
+    name.Parent = btn
+
+    local check = Instance.new("TextLabel")
+    check.Name = "Check"
+    check.Size = UDim2.new(0, 28, 1, 0)
+    check.Position = UDim2.new(1, -32, 0, 0)
+    check.BackgroundTransparency = 1
+    check.Text = isSelected and "✓" or ""
+    check.Font = Enum.Font.GothamBlack
+    check.TextSize = 24
+    check.TextColor3 = Color3.fromRGB(120, 230, 140)
+    check.Parent = btn
+
     btn.MouseButton1Click:Connect(function()
         EquipItemEvent:FireServer(slot, item.id)
         equipped[slot] = item.id
         for _, sibling in ipairs(listFrame:GetChildren()) do
             if sibling:IsA("TextButton") then
                 sibling.BackgroundColor3 = Color3.fromRGB(48, 48, 56)
+                local sibCheck = sibling:FindFirstChild("Check")
+                if sibCheck then sibCheck.Text = "" end
+                local sibStroke = sibling:FindFirstChild("OptionStroke")
+                if sibStroke then
+                    sibStroke.Color = Color3.fromRGB(70, 70, 80)
+                    sibStroke.Thickness = 1
+                end
             end
         end
         btn.BackgroundColor3 = DUTCH_BLUE
+        check.Text = "✓"
+        stroke.Color = Color3.new(1, 1, 1)
+        stroke.Thickness = 2
     end)
 end
 
@@ -248,24 +298,24 @@ for i, tabName in ipairs(TAB_ORDER) do
     end)
 end
 
--- ===== START SHIFT button (bottom of frame) =====
+-- ===== START YOUR SHIFT button (bottom of frame, large + green + centered) =====
 local startBtn = Instance.new("TextButton")
-startBtn.Size = UDim2.new(0, 280, 0, 56)
+startBtn.Size = UDim2.new(0, 360, 0, 68)
 startBtn.AnchorPoint = Vector2.new(0.5, 1)
 startBtn.Position = UDim2.new(0.5, 0, 1, -16)
-startBtn.Text = "START SHIFT"
-startBtn.Font = Enum.Font.GothamBold
-startBtn.TextSize = 22
+startBtn.Text = "▶ START YOUR SHIFT"
+startBtn.Font = Enum.Font.GothamBlack
+startBtn.TextSize = 26
 startBtn.TextColor3 = Color3.new(1, 1, 1)
-startBtn.BackgroundColor3 = DUTCH_ORANGE
+startBtn.BackgroundColor3 = Color3.fromRGB(40, 170, 80)
 startBtn.AutoButtonColor = true
 startBtn.Parent = frame
 local startCorner = Instance.new("UICorner")
-startCorner.CornerRadius = UDim.new(0, 12)
+startCorner.CornerRadius = UDim.new(0, 14)
 startCorner.Parent = startBtn
 local startStroke = Instance.new("UIStroke")
 startStroke.Color = Color3.new(1, 1, 1)
-startStroke.Thickness = 2
+startStroke.Thickness = 3
 startStroke.Parent = startBtn
 
 local hint = Instance.new("TextLabel")
