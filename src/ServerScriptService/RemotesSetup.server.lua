@@ -37,6 +37,8 @@ local REMOTE_EVENTS = {
     "HazardEnded",
     -- Phase 3: spawn flow
     "StartShift",
+    -- Phase 4: hand-off feedback
+    "HandoffResult",
 }
 
 local remotesFolder = ReplicatedStorage:FindFirstChild("Remotes")
