@@ -13,6 +13,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
 
 local OrderManager = require(script.Parent:WaitForChild("OrderManager"))
+local SoundManager = require(script.Parent:WaitForChild("SoundManager"))
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local HandoffResult = Remotes:WaitForChild("HandoffResult")
@@ -53,6 +54,12 @@ local function setupWindow(part)
         local success, payload = OrderManager:SubmitDrink(player, oldestId, cup:Serialize())
         if _G.ClearPlayerCup then _G.ClearPlayerCup(player) end
         HandoffResult:FireClient(player, success, payload)
+        if success then
+            SoundManager:PlayAt("OrderComplete", part, 0.7)
+            SoundManager:PlayAt("TipEarned", part, 0.5)
+        else
+            SoundManager:PlayForPlayer(player, "WrongDrink", 0.6)
+        end
     end)
 end
 

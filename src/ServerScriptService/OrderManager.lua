@@ -19,6 +19,11 @@ OrderManager.NextOrderID = 1
 OrderManager.RoundActive = false
 OrderManager.CurrentDifficulty = 1
 
+-- Server-side signal fired when a drink is successfully submitted. Other
+-- systems (DriveThruTraffic, NPCManager, etc.) connect to learn which
+-- order finished so they can react (cars leave happy, NPCs cheer).
+OrderManager.OrderCompleted = Instance.new("BindableEvent")
+
 local SECRET_CHANCE = 0.15
 
 function OrderManager:StartRound(durationSeconds)
@@ -26,29 +31,26 @@ function OrderManager:StartRound(durationSeconds)
     self.CurrentDifficulty = 1
     self.ActiveOrders = {}
 
+    -- Difficulty rises with elapsed time; DriveThruTraffic / NPCManager
+    -- read self.CurrentDifficulty to pace their spawn rates. We no longer
+    -- spawn orders here — every order is driven by an arriving customer
+    -- (car at the drive-thru, NPC at the walk-up window).
     task.spawn(function()
         local startTime = tick()
-        local nextSpawn = 0
-
         while self.RoundActive and (tick() - startTime) < durationSeconds do
-            if tick() >= nextSpawn then
-                self:SpawnOrder()
-                local interval = math.max(4, 14 - self.CurrentDifficulty)
-                nextSpawn = tick() + interval
-            end
-
             self.CurrentDifficulty = 1 + math.floor((tick() - startTime) / 30)
-
-            -- Per-order patience timeouts removed: orders persist for the
-            -- full round. Only the main round timer matters. Orders leave
-            -- the queue when the player completes them or when the round
-            -- ends.
-
-            task.wait(0.5)
+            task.wait(1)
         end
-
         self.RoundActive = false
     end)
+end
+
+-- Returns the orderID so the caller (a customer system) can hold a
+-- reference and know when their specific order completes.
+function OrderManager:GetActiveOrderCount()
+    local n = 0
+    for _ in pairs(self.ActiveOrders) do n += 1 end
+    return n
 end
 
 function OrderManager:SpawnOrder()
@@ -93,6 +95,7 @@ function OrderManager:SpawnOrder()
         tip = tip,
         extraShots = recipe.extraShots,
     })
+    return orderID
 end
 
 function OrderManager:SubmitDrink(player, orderID, cupData)
@@ -111,12 +114,11 @@ function OrderManager:SubmitDrink(player, orderID, cupData)
     local success, accuracy, reason = cup:MatchesRecipe(order.recipe, order.size)
 
     if success then
-        -- Tip was fixed at order spawn time via DrinkRecipes.GetTipForOrder.
-        -- Recompute as a fallback for orders that predate the field.
         local tip = order.tip or DrinkRecipes.GetTipForOrder(order.recipe, order.isSecret)
-
         OrderCompleteEvent:FireAllClients(orderID, player.Name, tip)
         self.ActiveOrders[orderID] = nil
+        -- Server-side signal: customer-system listeners (cars, NPCs) react.
+        OrderManager.OrderCompleted:Fire(orderID, player, tip)
         return true, tip
     else
         OrderFailedEvent:FireAllClients(orderID, reason)

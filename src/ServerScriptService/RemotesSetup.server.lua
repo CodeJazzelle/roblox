@@ -39,6 +39,8 @@ local REMOTE_EVENTS = {
     "StartShift",
     -- Phase 4: hand-off feedback
     "HandoffResult",
+    -- Phase 5: audio
+    "PlaySound",
 }
 
 local remotesFolder = ReplicatedStorage:FindFirstChild("Remotes")

@@ -8,6 +8,25 @@ local Players = game:GetService("Players")
 local CollectionService = game:GetService("CollectionService")
 
 local CupState = require(ReplicatedStorage.Modules.CupState)
+local SoundManager = require(script.Parent:WaitForChild("SoundManager"))
+
+-- Mapping tag → sound key for station SFX. Driver of all "interaction"
+-- audio so adding a new station means one entry here.
+local STATION_SOUND = {
+    CupTower_Small     = "CupGrab",
+    CupTower_Medium    = "CupGrab",
+    CupTower_Large     = "CupGrab",
+    EspressoMachine    = "EspressoPull",
+    RebelTap           = "SyrupPump",
+    TeaBrewer          = "EspressoPull",
+    LemonadeDispenser  = "SyrupPump",
+    MilkSteamer        = "MilkSteam",
+    SyrupPump          = "SyrupPump",
+    ToppingStation     = "SyrupPump",
+    LidStation         = "LidClick",
+    SleeveStation      = "CupGrab",
+    TrashCan           = "Trash",
+}
 
 local PlayerCups = {}
 
@@ -45,11 +64,23 @@ local function setupStation(stationPart, action)
 end
 
 local function bindTag(tag, action)
+    -- Wrap action with a sound trigger so every interaction plays the
+    -- station's SFX without each binding having to remember to fire it.
+    local soundKey = STATION_SOUND[tag]
+    local wrapped = action
+    if soundKey then
+        wrapped = function(player, part)
+            action(player, part)
+            if part and part:IsA("BasePart") then
+                SoundManager:PlayAt(soundKey, part, 0.5)
+            end
+        end
+    end
     for _, part in ipairs(CollectionService:GetTagged(tag)) do
-        setupStation(part, action)
+        setupStation(part, wrapped)
     end
     CollectionService:GetInstanceAddedSignal(tag):Connect(function(part)
-        setupStation(part, action)
+        setupStation(part, wrapped)
     end)
 end
 

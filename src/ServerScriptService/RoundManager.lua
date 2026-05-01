@@ -5,6 +5,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local OrderManager = require(script.Parent:WaitForChild("OrderManager"))
+local SoundManager = require(script.Parent:WaitForChild("SoundManager"))
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local RoundStartedEvent = Remotes:WaitForChild("RoundStarted")
@@ -19,6 +20,7 @@ function RoundManager:StartRound()
     self.TotalTips = 0
     RoundStartedEvent:FireAllClients(self.RoundLength)
     OrderManager:StartRound(self.RoundLength)
+    SoundManager:PlayAt("RoundStart", nil, 0.5)
 
     task.delay(self.RoundLength, function()
         self:EndRound()
@@ -36,6 +38,7 @@ function RoundManager:EndRound()
     if self.TotalTips >= 200 then stars = 3 end
 
     RoundEndedEvent:FireAllClients(self.TotalTips, stars)
+    SoundManager:PlayAt("RoundEnd", nil, 0.5)
 end
 
 task.spawn(function()

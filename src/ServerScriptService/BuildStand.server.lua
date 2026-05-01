@@ -330,10 +330,29 @@ local function buildSimpleCar(x, z, bodyColor)
         })
     end
 end
-buildSimpleCar(BLD_W/2 + 8,  20, Color3.fromRGB(60,  90,  200))
-buildSimpleCar(BLD_W/2 + 8,   0, Color3.fromRGB(220, 50,  50))
-buildSimpleCar(BLD_W/2 + 8, -20, Color3.fromRGB(60,  160, 80))
-print("[BuildStand] Cars built (3)")
+-- Drive-thru waypoint markers (invisible parts tagged for DriveThruTraffic).
+-- Cars drive south-to-north along x = BLD_W/2 + 8 = +53.
+do
+    local LANE_X = BLD_W/2 + 8
+    local LANE_Y = FLOOR_TOP + 1.4   -- car body center height
+    local function waypoint(name, z, kind)
+        local p = mkPart({
+            Name = name,
+            Size = Vector3.new(2, 0.2, 2),
+            CFrame = CFrame.new(LANE_X, LANE_Y - 1.5, z),
+            Color = DUTCH_ORANGE, Material = Enum.Material.Neon,
+            CanCollide = false, Transparency = 1,
+            Tags = {"DriveThruWaypoint"},
+            Attributes = {WaypointType = kind, LaneX = LANE_X, LaneY = LANE_Y},
+        })
+        return p
+    end
+    waypoint("DTSpawn",  +50, "Spawn")
+    waypoint("DTOrder",  +18, "Order")
+    waypoint("DTPickup",  +2, "Pickup")
+    waypoint("DTExit",   -50, "Exit")
+end
+print("[BuildStand] Drive-thru waypoints placed (Spawn / Order / Pickup / Exit)")
 
 -- ============================================================
 -- Building floor (top surface at Y=0)
