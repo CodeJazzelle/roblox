@@ -39,11 +39,10 @@ function OrderManager:StartRound(durationSeconds)
 
             self.CurrentDifficulty = 1 + math.floor((tick() - startTime) / 30)
 
-            for orderID, order in pairs(self.ActiveOrders) do
-                if tick() > order.expiresAt then
-                    self:FailOrder(orderID, "Timeout")
-                end
-            end
+            -- Per-order patience timeouts removed: orders persist for the
+            -- full round. Only the main round timer matters. Orders leave
+            -- the queue when the player completes them or when the round
+            -- ends.
 
             task.wait(0.5)
         end
@@ -70,15 +69,18 @@ function OrderManager:SpawnOrder()
         displayName = recipe.displayName
     end
 
-    local patience = math.max(30, 75 - (self.CurrentDifficulty * 5))
+    -- Tier-based tip — fixed at order creation so the value displayed on
+    -- the card matches what gets awarded on submit, regardless of how
+    -- long the order sits in the queue.
+    local tip = DrinkRecipes.GetTipForOrder(recipe, isSecret)
 
     self.ActiveOrders[orderID] = {
         recipe = recipe,
         size = recipe.defaultSize,
-        expiresAt = tick() + patience,
         isSecret = isSecret,
         drinkID = drinkID,
         spawnedAt = tick(),
+        tip = tip,
     }
 
     NewOrderEvent:FireAllClients(orderID, {
@@ -88,7 +90,8 @@ function OrderManager:SpawnOrder()
         syrups = recipe.syrups,
         toppings = recipe.toppings,
         isSecret = isSecret,
-        patience = patience,
+        tip = tip,
+        extraShots = recipe.extraShots,
     })
 end
 
@@ -108,9 +111,9 @@ function OrderManager:SubmitDrink(player, orderID, cupData)
     local success, accuracy, reason = cup:MatchesRecipe(order.recipe, order.size)
 
     if success then
-        local timeBonus = math.max(0, (order.expiresAt - tick()) / 30)
-        local tipMultiplier = order.isSecret and 2 or 1
-        local tip = math.floor((order.recipe.basePrice + (timeBonus * 2)) * tipMultiplier)
+        -- Tip was fixed at order spawn time via DrinkRecipes.GetTipForOrder.
+        -- Recompute as a fallback for orders that predate the field.
+        local tip = order.tip or DrinkRecipes.GetTipForOrder(order.recipe, order.isSecret)
 
         OrderCompleteEvent:FireAllClients(orderID, player.Name, tip)
         self.ActiveOrders[orderID] = nil

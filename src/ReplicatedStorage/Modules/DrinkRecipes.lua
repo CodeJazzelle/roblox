@@ -190,6 +190,32 @@ DrinkRecipes.AllToppings = {
     "Boba", "Cinnamon", "Sprinkles",
 }
 
+-- Returns the base tip for a recipe based on complexity.
+--   Tier 1 ($3): 0-1 syrups AND 0 toppings
+--   Tier 2 ($5): 2 syrups OR 1 topping
+--   Tier 3 ($7): 3+ syrups OR 2+ toppings
+--   Tier 4 ($10): drinks with extra-shot requirements (the player has to
+--                 track an extra step beyond the base recipe)
+-- Secret-menu drinks pay a flat $15 — see GetTipForOrder.
+function DrinkRecipes.GetTipTier(recipe)
+    if not recipe then return 3 end
+    local syrupCount = recipe.syrups and #recipe.syrups or 0
+    local toppingCount = recipe.toppings and #recipe.toppings or 0
+    local extraShots = recipe.extraShots or 0
+
+    if extraShots > 0 then return 10 end
+    if syrupCount >= 3 or toppingCount >= 2 then return 7 end
+    if syrupCount >= 2 or toppingCount >= 1 then return 5 end
+    return 3
+end
+
+-- Tip amount actually awarded for an order. Secret-menu drinks always pay
+-- $15 (the highest tier) regardless of their generated complexity.
+function DrinkRecipes.GetTipForOrder(recipe, isSecret)
+    if isSecret then return 15 end
+    return DrinkRecipes.GetTipTier(recipe)
+end
+
 function DrinkRecipes.GetRecipe(drinkID)
     return DrinkRecipes.Menu[drinkID]
 end
