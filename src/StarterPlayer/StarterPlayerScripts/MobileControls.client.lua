@@ -130,54 +130,22 @@ local function makeButton(opts)
     return btn
 end
 
--- Layout (all buttons 60×60 unless noted):
---   * INTERACT — bottom-CENTER (most-thumbed action), 70×70 so it stays
---     biggest of the bunch and easy to hit
---   * Outfit / Shop / Chat — stacked vertically on the right
---   * Ping — bottom-LEFT corner, balances Outfit cluster across the screen
-local BTN_SIZE  = 60
-local SPACING   = 10
+-- Layout:
+--   * INTERACT — bottom-CENTER, 80×80 (primary action, biggest target)
+--   * PING     — bottom-LEFT,   60×60
+--   * MENU     — top-RIGHT,     60×60. Tap to slide out CHAT / SHOP /
+--                 OUTFIT options below it. Tap-outside backdrop closes.
+local BTN_SIZE = 60
 
 makeButton({
     name = "InteractBtn",
     label = "🤝\nINTERACT",
     color = Color3.fromRGB(255, 200, 50),
-    size = 70,
+    size = 80,
     textSize = 13,
     anchor = Vector2.new(0.5, 1),
     pos = UDim2.new(0.5, 0, 1, -16),
     onTap = fireNearestPrompt,
-})
-
-makeButton({
-    name = "OutfitBtn",
-    label = "👕\nOUTFIT",
-    color = Color3.fromRGB(170, 90, 200),
-    size = BTN_SIZE,
-    textSize = 11,
-    anchor = Vector2.new(1, 1),
-    pos = UDim2.new(1, -16, 1, -16),
-    onTap = function() toggleGui("CharacterCustomizer") end,
-})
-makeButton({
-    name = "ShopBtn",
-    label = "🛒\nSHOP",
-    color = Color3.fromRGB(60, 180, 100),
-    size = BTN_SIZE,
-    textSize = 11,
-    anchor = Vector2.new(1, 1),
-    pos = UDim2.new(1, -16, 1, -16 - (BTN_SIZE + SPACING)),
-    onTap = function() toggleGui("MerchShop") end,
-})
-makeButton({
-    name = "ChatBtn",
-    label = "💬\nCHAT",
-    color = Color3.fromRGB(60, 130, 220),
-    size = BTN_SIZE,
-    textSize = 11,
-    anchor = Vector2.new(1, 1),
-    pos = UDim2.new(1, -16, 1, -16 - 2 * (BTN_SIZE + SPACING)),
-    onTap = function() toggleGui("QuickChatWheel") end,
 })
 
 makeButton({
@@ -189,4 +157,120 @@ makeButton({
     anchor = Vector2.new(0, 1),
     pos = UDim2.new(0, 16, 1, -16),
     onTap = placePing,
+})
+
+-- ============================================================
+-- Collapsed MENU (top-right) — replaces the 3 separate Chat/Shop/Outfit
+-- buttons. Tap-to-toggle, slides options in below with a 0.1s stagger,
+-- backdrop-tap or option-tap closes.
+-- ============================================================
+local MENU_TOP, MENU_RIGHT = 16, 16
+local MENU_BTN_SIZE = 60
+local OPTION_W, OPTION_H, OPTION_GAP = 160, 50, 8
+
+local menuOpen = false
+local menuOptions = {}
+local menuBackdrop = nil
+local closeMenu  -- forward decl (openMenu refers to it)
+
+local function optionFinalY(index)
+    return MENU_TOP + MENU_BTN_SIZE + 12 + (index - 1) * (OPTION_H + OPTION_GAP)
+end
+
+local function makeOptionButton(index, emoji, label, color, onActivate)
+    local b = Instance.new("TextButton")
+    b.Name = "MenuOption_" .. label
+    b.Size = UDim2.fromOffset(OPTION_W, OPTION_H)
+    b.AnchorPoint = Vector2.new(1, 0)
+    -- Start hidden behind the menu button (slides DOWN to its target).
+    b.Position = UDim2.new(1, -MENU_RIGHT, 0, MENU_TOP)
+    b.BackgroundColor3 = color
+    b.BackgroundTransparency = 0.05
+    b.AutoButtonColor = true
+    b.Text = emoji .. "  " .. label
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 18
+    b.TextColor3 = Color3.new(1, 1, 1)
+    b.TextStrokeTransparency = 0.5
+    b.ZIndex = 5
+    b.Parent = screenGui
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = b
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.new(1, 1, 1)
+    stroke.Thickness = 2
+    stroke.Transparency = 0.4
+    stroke.Parent = b
+    b.MouseButton1Click:Connect(function()
+        onActivate()
+        if closeMenu then closeMenu() end
+    end)
+
+    -- Slide-in tween with 0.1s stagger
+    task.delay((index - 1) * 0.1, function()
+        TweenService:Create(b, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Position = UDim2.new(1, -MENU_RIGHT, 0, optionFinalY(index)),
+        }):Play()
+    end)
+    return b
+end
+
+local function openMenu()
+    if menuOpen then return end
+    menuOpen = true
+
+    -- Full-screen invisible button BEHIND the options — catches tap-outside.
+    menuBackdrop = Instance.new("TextButton")
+    menuBackdrop.Name = "MenuBackdrop"
+    menuBackdrop.Size = UDim2.fromScale(1, 1)
+    menuBackdrop.BackgroundTransparency = 1
+    menuBackdrop.Text = ""
+    menuBackdrop.AutoButtonColor = false
+    menuBackdrop.ZIndex = 1
+    menuBackdrop.Parent = screenGui
+    menuBackdrop.MouseButton1Click:Connect(function()
+        if closeMenu then closeMenu() end
+    end)
+
+    menuOptions = {
+        makeOptionButton(1, "💬", "CHAT",   Color3.fromRGB(60,  130, 220), function() toggleGui("QuickChatWheel") end),
+        makeOptionButton(2, "🛒", "SHOP",   Color3.fromRGB(60,  180, 100), function() toggleGui("MerchShop") end),
+        makeOptionButton(3, "👕", "OUTFIT", Color3.fromRGB(170, 90,  200), function() toggleGui("CharacterCustomizer") end),
+    }
+end
+
+closeMenu = function()
+    if not menuOpen then return end
+    menuOpen = false
+    if menuBackdrop then
+        menuBackdrop:Destroy()
+        menuBackdrop = nil
+    end
+    -- Tween options back up under the menu button, then destroy.
+    local toCleanup = menuOptions
+    menuOptions = {}
+    for _, b in ipairs(toCleanup) do
+        TweenService:Create(b, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            Position = UDim2.new(1, -MENU_RIGHT, 0, MENU_TOP),
+        }):Play()
+    end
+    task.delay(0.2, function()
+        for _, b in ipairs(toCleanup) do
+            if b and b.Parent then b:Destroy() end
+        end
+    end)
+end
+
+makeButton({
+    name = "MenuBtn",
+    label = "≡\nMENU",
+    color = Color3.fromRGB(0, 90, 171),  -- Dutch Bros blue
+    size = MENU_BTN_SIZE,
+    textSize = 11,
+    anchor = Vector2.new(1, 0),
+    pos = UDim2.new(1, -MENU_RIGHT, 0, MENU_TOP),
+    onTap = function()
+        if menuOpen then closeMenu() else openMenu() end
+    end,
 })
