@@ -355,10 +355,13 @@ end)
 
 refreshList()
 
--- Allow re-opening the menu after the shift has started (so players can adjust look)
+-- M key always toggles the customizer. (Previously gated on `started`,
+-- which required the player to click START SHIFT first — but the
+-- customizer no longer auto-opens, so we'd never reach `started=true`
+-- and M would never work. Ungated now.)
 UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
-    if input.KeyCode == Enum.KeyCode.M and started then
+    if input.KeyCode == Enum.KeyCode.M then
         screenGui.Enabled = not screenGui.Enabled
     end
 end)

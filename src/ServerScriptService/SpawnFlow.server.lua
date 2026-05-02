@@ -1,14 +1,15 @@
 -- SpawnFlow.server.lua
--- Freeze/unfreeze flow plus an EXPLICIT teleport on every CharacterAdded.
--- The SpawnLocation in BuildStand.server.lua should be enough on its own,
--- but Roblox occasionally spawns characters at default-engine positions
--- (origin, or above any roof) when timing is off. The explicit HRP teleport
--- below guarantees the character lands on the floor at the cup-tower end
+-- Explicit HRP teleport on every CharacterAdded. The SpawnLocation in
+-- BuildStand.server.lua should be enough on its own, but Roblox
+-- occasionally spawns characters at default-engine positions (origin,
+-- or above any roof) when timing is off. The explicit teleport below
+-- guarantees the character lands on the floor at the cup-tower end
 -- regardless of what Roblox decides.
 --
--- The "shift started" status is held as a player Attribute, so respawning
--- after death does NOT re-freeze the player — but they still get
--- teleported back inside the building.
+-- Movement is no longer locked on join — the customizer is opt-in
+-- (M / Y / Triangle) instead of auto-shown, so there's nothing to gate
+-- movement on. The StartShift remote handler is kept for backward
+-- compatibility but does nothing useful now.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -42,12 +43,10 @@ local function teleport(character)
 end
 
 local function onCharacterAdded(player, character)
-    teleport(character)  -- always teleport, even after START SHIFT
-    if player:GetAttribute("ShiftStarted") then
-        setMovementLocked(character, false)
-    else
-        setMovementLocked(character, true)
-    end
+    teleport(character)
+    -- Always unlock — the customizer no longer freezes the player.
+    setMovementLocked(character, false)
+    player:SetAttribute("ShiftStarted", true)
 end
 
 local function bindPlayer(player)

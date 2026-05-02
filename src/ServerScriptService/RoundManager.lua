@@ -15,8 +15,10 @@ local TipsUpdatedEvent = Remotes:WaitForChild("TipsUpdated")
 local RoundManager = {}
 RoundManager.TotalTips = 0
 RoundManager.RoundLength = 240
+RoundManager.RoundActive = false
 
 function RoundManager:StartRound()
+    self.RoundActive = true
     self.TotalTips = 0
     RoundStartedEvent:FireAllClients(self.RoundLength)
     OrderManager:StartRound(self.RoundLength)
@@ -33,6 +35,7 @@ function RoundManager:AddTip(amount)
 end
 
 function RoundManager:EndRound()
+    self.RoundActive = false
     local stars = 1
     if self.TotalTips >= 100 then stars = 2 end
     if self.TotalTips >= 200 then stars = 3 end
@@ -44,16 +47,42 @@ function RoundManager:EndRound()
     -- cards visible during the gap before the next round. Goes through
     -- ClearAllOrders (NOT FailOrder) so no failure consequences fire.
     OrderManager:ClearAllOrders("Round ended")
+
+    -- Auto-cycle: 5s end-of-round screen, then start the next round.
+    task.delay(5, function()
+        if #Players:GetPlayers() > 0 then
+            self:StartRound()
+        end
+    end)
 end
 
-task.spawn(function()
-    while true do
-        task.wait(15)
-        if #Players:GetPlayers() > 0 then
+-- Auto-start the very first round 3 seconds after the first player
+-- joins. Subsequent players join into whatever round is in progress —
+-- they don't trigger a new one. The auto-cycle in EndRound handles every
+-- round after the first.
+local autoStartScheduled = false
+Players.PlayerAdded:Connect(function()
+    if autoStartScheduled then return end
+    if RoundManager.RoundActive then return end
+    if #Players:GetPlayers() ~= 1 then return end
+    autoStartScheduled = true
+    print("[RoundManager] First player joined — starting round automatically")
+    task.delay(3, function()
+        if not RoundManager.RoundActive and #Players:GetPlayers() > 0 then
             RoundManager:StartRound()
-            task.wait(RoundManager.RoundLength + 10)
         end
-    end
+    end)
 end)
+-- If a player is somehow already present at module-load time (hot reload
+-- in Studio), schedule the same first-round auto-start.
+if not autoStartScheduled and #Players:GetPlayers() > 0 then
+    autoStartScheduled = true
+    print("[RoundManager] Player already present — starting round automatically")
+    task.delay(3, function()
+        if not RoundManager.RoundActive and #Players:GetPlayers() > 0 then
+            RoundManager:StartRound()
+        end
+    end)
+end
 
 return RoundManager
