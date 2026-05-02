@@ -85,10 +85,23 @@ local TAB_ORDER = {"Hair", "Head", "Body", "Voice"}
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "CharacterCustomizer"
 screenGui.ResetOnSpawn = false
-screenGui.Enabled = true            -- shown immediately on join
+-- DO NOT auto-open the customizer on spawn. The customizer is opt-in:
+-- M (PC), Y (Xbox), Triangle (PlayStation), or the OUTFIT entry in the
+-- mobile drawer. If you find this set back to true, that's a regression
+-- and the traceback printer below will tell you who flipped it.
+screenGui.Enabled = false
 screenGui.IgnoreGuiInset = true
 screenGui.DisplayOrder = 50
 screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Diagnostic: every time something opens the customizer, log who did it.
+-- Helps catch any future code path that tries to auto-open. Only fires
+-- on the false→true transition; the close path is silent.
+screenGui:GetPropertyChangedSignal("Enabled"):Connect(function()
+    if screenGui.Enabled then
+        print("[Customizer] Opened by:", debug.traceback())
+    end
+end)
 
 -- Dimmed full-screen backdrop so the world behind feels muted while customizing
 local backdrop = Instance.new("Frame")
