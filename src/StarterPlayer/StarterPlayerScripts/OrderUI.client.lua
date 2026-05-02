@@ -15,6 +15,9 @@ local UserInputService = game:GetService("UserInputService")
 -- check used by MobileControls / MobileLabelFilter so all three agree
 -- on which UI mode to render.
 local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+-- Mobile shows orders inside the slide-in drawer (MobileDrawer.client.lua),
+-- so the persistent right-side queue is hidden entirely.
+if isMobile then return end
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local NewOrder = Remotes:WaitForChild("NewOrder")

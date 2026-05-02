@@ -68,6 +68,16 @@ for _, tag in ipairs(STATION_TAGS) do
     CollectionService:GetInstanceAddedSignal(tag):Connect(addEntry)
 end
 
+-- Hide every NPC name BillboardGui on mobile entirely (cosmetic only;
+-- gameplay doesn't need to see "Brad" floating over a pedestrian).
+local function hideNPCLabel(gui)
+    if gui:IsA("BillboardGui") then gui.Enabled = false end
+end
+for _, gui in ipairs(CollectionService:GetTagged("NPCNameLabel")) do
+    hideNPCLabel(gui)
+end
+CollectionService:GetInstanceAddedSignal("NPCNameLabel"):Connect(hideNPCLabel)
+
 -- Per-frame: pick the closest station within NEAREST_RADIUS, enable its
 -- label, disable everyone else's. Iterating a couple-dozen parts per
 -- frame is well within budget on phones.

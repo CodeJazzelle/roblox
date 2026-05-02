@@ -7,6 +7,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
 local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+-- On mobile the player can't see the order queue when the drawer is
+-- closed, so a small toast isn't enough — we replace it with a
+-- full-screen flash + big floating text so the result is unmissable.
+local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local HandoffResult = Remotes:WaitForChild("HandoffResult")
@@ -86,7 +92,48 @@ local function chatMsg(text, color)
     end)
 end
 
+local function spawnMobileFlash(success, payload)
+    local color = success and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(220, 60, 60)
+    local text  = success and ("+$" .. tostring(tonumber(payload) or 0)) or "WRONG ORDER"
+
+    local overlay = Instance.new("Frame")
+    overlay.Size = UDim2.fromScale(1, 1)
+    overlay.BackgroundColor3 = color
+    overlay.BackgroundTransparency = 0.3
+    overlay.BorderSizePixel = 0
+    overlay.ZIndex = 80
+    overlay.Parent = screenGui
+
+    local big = Instance.new("TextLabel")
+    big.AnchorPoint = Vector2.new(0.5, 0.5)
+    big.Size = UDim2.new(1, -32, 0, 100)
+    big.Position = UDim2.fromScale(0.5, 0.5)
+    big.BackgroundTransparency = 1
+    big.Text = text
+    big.Font = Enum.Font.GothamBlack
+    big.TextSize = 64
+    big.TextColor3 = Color3.new(1, 1, 1)
+    big.TextStrokeTransparency = 0
+    big.TextScaled = true
+    big.ZIndex = 81
+    big.Parent = overlay
+
+    -- Fade overlay out + float text up
+    TweenService:Create(overlay, TweenInfo.new(0.6), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(big, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Position = UDim2.fromScale(0.5, 0.32),
+        TextTransparency = 1,
+        TextStrokeTransparency = 1,
+    }):Play()
+    task.delay(0.7, function() overlay:Destroy() end)
+end
+
 HandoffResult.OnClientEvent:Connect(function(success, payload)
+    if isMobile then
+        spawnMobileFlash(success, payload)
+        if success then playChime() end
+        return
+    end
     if success then
         local tip = tonumber(payload) or 0
         local text = ("Order complete! +%d tips"):format(tip)

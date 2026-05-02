@@ -5,6 +5,13 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+
+-- Mobile shows the holding-cup status inside the slide-in drawer (see
+-- MobileDrawer.client.lua), so the persistent bottom-left HUD is hidden
+-- entirely on touch devices.
+local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+if isMobile then return end
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local CupUpdated = Remotes:WaitForChild("CupUpdated")

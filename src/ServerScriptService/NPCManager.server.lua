@@ -16,6 +16,7 @@
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CollectionService = game:GetService("CollectionService")
 
 -- Lazy require — OrderManager isn't strictly required (cheer is best-effort).
 local function safeRequireOrderManager()
@@ -97,6 +98,7 @@ local function addNameLabel(model, name)
     local head = model:FindFirstChild("Head")
     if not head then return end
     local bb = Instance.new("BillboardGui")
+    bb.Name = "NPCNameLabel"
     bb.Adornee = head
     bb.Size = UDim2.new(0, 180, 0, 28)
     bb.StudsOffset = Vector3.new(0, 2.5, 0)
@@ -104,6 +106,9 @@ local function addNameLabel(model, name)
     bb.LightInfluence = 0
     bb.MaxDistance = 80
     bb.Parent = head
+    -- Tag so mobile clients can disable cosmetic NPC names to keep the
+    -- screen clean (see MobileLabelFilter.client.lua).
+    CollectionService:AddTag(bb, "NPCNameLabel")
 
     local label = Instance.new("TextLabel")
     label.Size = UDim2.fromScale(1, 1)

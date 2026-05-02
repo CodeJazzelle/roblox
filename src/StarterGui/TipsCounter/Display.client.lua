@@ -6,7 +6,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
+-- Mobile surfaces the tips count inside the drawer; the persistent
+-- top-center counter is hidden on touch devices.
 local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+if isMobile then return end
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local TipsUpdated = Remotes:WaitForChild("TipsUpdated")
