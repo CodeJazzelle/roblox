@@ -130,54 +130,63 @@ local function makeButton(opts)
     return btn
 end
 
--- Bottom-right cluster: stacked vertically
-local CLUSTER_X = -16   -- right margin
-local CLUSTER_Y = -16   -- bottom margin
-local BTN_SIZE  = 80
-local SPACING   = 12
+-- Layout (all buttons 60×60 unless noted):
+--   * INTERACT — bottom-CENTER (most-thumbed action), 70×70 so it stays
+--     biggest of the bunch and easy to hit
+--   * Outfit / Shop / Chat — stacked vertically on the right
+--   * Ping — bottom-LEFT corner, balances Outfit cluster across the screen
+local BTN_SIZE  = 60
+local SPACING   = 10
 
 makeButton({
     name = "InteractBtn",
     label = "🤝\nINTERACT",
     color = Color3.fromRGB(255, 200, 50),
-    anchor = Vector2.new(1, 1),
-    pos = UDim2.new(1, CLUSTER_X, 1, CLUSTER_Y),
+    size = 70,
+    textSize = 13,
+    anchor = Vector2.new(0.5, 1),
+    pos = UDim2.new(0.5, 0, 1, -16),
     onTap = fireNearestPrompt,
 })
+
 makeButton({
     name = "OutfitBtn",
     label = "👕\nOUTFIT",
     color = Color3.fromRGB(170, 90, 200),
+    size = BTN_SIZE,
+    textSize = 11,
     anchor = Vector2.new(1, 1),
-    pos = UDim2.new(1, CLUSTER_X, 1, CLUSTER_Y - (BTN_SIZE + SPACING)),
+    pos = UDim2.new(1, -16, 1, -16),
     onTap = function() toggleGui("CharacterCustomizer") end,
 })
 makeButton({
     name = "ShopBtn",
     label = "🛒\nSHOP",
     color = Color3.fromRGB(60, 180, 100),
+    size = BTN_SIZE,
+    textSize = 11,
     anchor = Vector2.new(1, 1),
-    pos = UDim2.new(1, CLUSTER_X, 1, CLUSTER_Y - 2 * (BTN_SIZE + SPACING)),
+    pos = UDim2.new(1, -16, 1, -16 - (BTN_SIZE + SPACING)),
     onTap = function() toggleGui("MerchShop") end,
 })
 makeButton({
     name = "ChatBtn",
     label = "💬\nCHAT",
     color = Color3.fromRGB(60, 130, 220),
-    size = 70,
-    textSize = 14,
+    size = BTN_SIZE,
+    textSize = 11,
     anchor = Vector2.new(1, 1),
-    pos = UDim2.new(1, CLUSTER_X - 5, 1, CLUSTER_Y - 3 * (BTN_SIZE + SPACING)),
+    pos = UDim2.new(1, -16, 1, -16 - 2 * (BTN_SIZE + SPACING)),
     onTap = function() toggleGui("QuickChatWheel") end,
 })
 
--- Bottom-LEFT (separate from right cluster; doesn't conflict with thumbstick
--- which is also on the left, but we sit above it)
 makeButton({
     name = "PingBtn",
     label = "📍\nPING",
     color = Color3.fromRGB(255, 122, 0),
+    size = BTN_SIZE,
+    textSize = 11,
     anchor = Vector2.new(0, 1),
-    pos = UDim2.new(0, 16, 1, -200),  -- well above the thumbstick area
+    pos = UDim2.new(0, 16, 1, -16),
     onTap = placePing,
 })

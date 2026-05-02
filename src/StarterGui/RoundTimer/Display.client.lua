@@ -4,6 +4,9 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local RoundStarted = Remotes:WaitForChild("RoundStarted")
@@ -32,6 +35,14 @@ label.TextColor3 = Color3.new(1, 1, 1)
 label.Font = Enum.Font.GothamBold
 label.TextSize = 32
 label.Parent = frame
+
+-- Mobile shrink: 0.55 keeps the timer readable but well clear of the
+-- top order-card strip and the corner button clusters.
+if isMobile then
+    local mobileScale = Instance.new("UIScale")
+    mobileScale.Scale = 0.55
+    mobileScale.Parent = frame
+end
 
 local roundEndsAt = nil
 

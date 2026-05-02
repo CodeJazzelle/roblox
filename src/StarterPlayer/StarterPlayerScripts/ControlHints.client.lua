@@ -118,8 +118,21 @@ setVisible(true)
 
 UserInputService.LastInputTypeChanged:Connect(applyForCurrent)
 
--- Auto-hide after 10 seconds
-task.delay(10, function() setVisible(false) end)
+-- Mobile: tighten the auto-hide and never show the "[Tab] show controls"
+-- reshow hint (mobile players have the corner buttons already, no need
+-- for persistent text taking up screen space).
+local isMobileForHints = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+local autoHideDelay = isMobileForHints and 5 or 10
+if isMobileForHints then
+    hintReshow.Visible = false
+end
+
+task.delay(autoHideDelay, function()
+    setVisible(false)
+    if isMobileForHints then
+        hintReshow.Visible = false  -- keep it hidden even after main hide
+    end
+end)
 
 -- Re-show on Tab (PC) / Select (gamepad)
 UserInputService.InputBegan:Connect(function(input, processed)

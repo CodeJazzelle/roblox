@@ -4,6 +4,9 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local TipsUpdated = Remotes:WaitForChild("TipsUpdated")
@@ -17,7 +20,9 @@ local frame = Instance.new("Frame")
 frame.Name = "Container"
 frame.Size = UDim2.fromOffset(200, 56)
 frame.AnchorPoint = Vector2.new(0.5, 0)
-frame.Position = UDim2.new(0.5, 0, 0, 84)
+-- Mobile sits the tips block tighter to the timer (which is shrunk to
+-- 0.55) so they don't leave a giant gap.
+frame.Position = isMobile and UDim2.new(0.5, 0, 0, 56) or UDim2.new(0.5, 0, 0, 84)
 frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 frame.Visible = false
 frame.Parent = screenGui
@@ -33,6 +38,12 @@ label.TextColor3 = DUTCH_BLUE
 label.Font = Enum.Font.GothamBold
 label.TextSize = 22
 label.Parent = frame
+
+if isMobile then
+    local mobileScale = Instance.new("UIScale")
+    mobileScale.Scale = 0.55
+    mobileScale.Parent = frame
+end
 
 local function pulse()
     local scale = Instance.new("UIScale")

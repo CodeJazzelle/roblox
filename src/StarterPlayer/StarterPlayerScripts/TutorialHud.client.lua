@@ -7,6 +7,12 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+
+-- The 940-wide bottom bar overflows phone screens. Skip it on mobile —
+-- the InstructionsScreen on first join already covers the same ground.
+local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+if isMobile then return end
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local CupUpdated = Remotes:WaitForChild("CupUpdated")
