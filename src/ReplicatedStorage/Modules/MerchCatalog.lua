@@ -33,11 +33,14 @@ MerchCatalog.Slots = {
 -- Item schema:
 --   id (string), name, category, rarity, price (Bro Bucks), slot,
 --   description, accessoryAssetId (Roblox Catalog asset; 0 = unassigned placeholder),
---   iconAssetId, seasonalMonth (optional, 1-12; only purchasable that month)
+--   iconAssetId, seasonalMonth (optional, 1-12; only purchasable that month),
+--   productImage (optional rbxassetid string — shown in shop card header),
+--   characterImage (optional rbxassetid string — shown in try-on popup;
+--                  falls back to productImage if missing).
 MerchCatalog.Items = {
     -- ===== TOPS (12) =====
-    {id = "tee_classic_blue",     name = "Classic Blue Tee",     category = "Tops", rarity = "Common",    price = 50,   slot = "Shirt", accessoryAssetId = 0, iconAssetId = 0, description = "The OG. Goes with everything."},
-    {id = "hoodie_windmill",      name = "Windmill Hoodie",      category = "Tops", rarity = "Uncommon",  price = 200,  slot = "Shirt", accessoryAssetId = 0, iconAssetId = 0, description = "Spinning windmill print on the back."},
+    {id = "tee_classic_blue",     name = "Classic Blue Tee",     category = "Tops", rarity = "Common",    price = 50,   slot = "Shirt", accessoryAssetId = 0, iconAssetId = 0, description = "The OG. Goes with everything.",                productImage = "rbxassetid://89050420470744",  characterImage = "rbxassetid://88948542947961"},
+    {id = "hoodie_windmill",      name = "Windmill Hoodie",      category = "Tops", rarity = "Uncommon",  price = 200,  slot = "Shirt", accessoryAssetId = 0, iconAssetId = 0, description = "Spinning windmill print on the back.",          productImage = "rbxassetid://107002412327069", characterImage = "rbxassetid://87836361672119"},
     {id = "tee_bro_crew",         name = "Bro Crew Tee",         category = "Tops", rarity = "Common",    price = 75,   slot = "Shirt", accessoryAssetId = 0, iconAssetId = 0, description = "Soft cotton, soft vibes."},
     {id = "polo_stand_manager",   name = "Stand Manager Polo",   category = "Tops", rarity = "Rare",      price = 350,  slot = "Shirt", accessoryAssetId = 0, iconAssetId = 0, description = "Embroidered windmill. You're in charge now."},
     {id = "longsleeve_haul",      name = "Long-Haul Long Sleeve",category = "Tops", rarity = "Uncommon",  price = 175,  slot = "Shirt", accessoryAssetId = 0, iconAssetId = 0, description = "For early-morning drive-thru shifts."},
@@ -52,7 +55,7 @@ MerchCatalog.Items = {
     -- ===== HEADWEAR (10) =====
     {id = "hat_bro_snapback",     name = "Bro Snapback",         category = "Headwear", rarity = "Common",    price = 60,  slot = "Hat", accessoryAssetId = 0, iconAssetId = 0, description = "Flat brim, embroidered windmill."},
     {id = "hat_pom_beanie",       name = "Pom Beanie",           category = "Headwear", rarity = "Uncommon",  price = 175, slot = "Hat", accessoryAssetId = 0, iconAssetId = 0, description = "Fluffy pom on top."},
-    {id = "hat_trucker",          name = "Trucker Cap",          category = "Headwear", rarity = "Common",    price = 70,  slot = "Hat", accessoryAssetId = 0, iconAssetId = 0, description = "Mesh back. Built for comfort."},
+    {id = "hat_trucker",          name = "Racing Trucker Hat",   category = "Headwear", rarity = "Common",    price = 70,  slot = "Hat", accessoryAssetId = 0, iconAssetId = 0, description = "Mesh back, racing-stripe windmill on the front.", productImage = "rbxassetid://114265973280608", characterImage = "rbxassetid://126789288671890"},
     {id = "hat_dad",              name = "Dad Hat",              category = "Headwear", rarity = "Common",    price = 65,  slot = "Hat", accessoryAssetId = 0, iconAssetId = 0, description = "Curved brim, low profile."},
     {id = "hat_bucket",           name = "Bucket of Bro",        category = "Headwear", rarity = "Uncommon",  price = 200, slot = "Hat", accessoryAssetId = 0, iconAssetId = 0, description = "Reversible, festival-ready."},
     {id = "hat_visor",            name = "Sun Visor",            category = "Headwear", rarity = "Common",    price = 50,  slot = "Hat", accessoryAssetId = 0, iconAssetId = 0, description = "Open-top, breezy."},
@@ -66,12 +69,12 @@ MerchCatalog.Items = {
     {id = "pants_stand_shorts",   name = "Stand Shorts",         category = "Bottoms",  rarity = "Common",    price = 75,  slot = "Pants", accessoryAssetId = 0, iconAssetId = 0, description = "Cargo-style, lots of pocket space."},
     {id = "pants_cozy_sweats",    name = "Cozy Sweats",          category = "Bottoms",  rarity = "Common",    price = 80,  slot = "Pants", accessoryAssetId = 0, iconAssetId = 0, description = "The off-shift uniform."},
     {id = "pants_drive_khaki",    name = "Drive-Thru Khakis",    category = "Bottoms",  rarity = "Uncommon",  price = 200, slot = "Pants", accessoryAssetId = 0, iconAssetId = 0, description = "Looks sharp on a window shift."},
-    {id = "pants_rebel_cargo",    name = "Rebel Cargos",         category = "Bottoms",  rarity = "Rare",      price = 350, slot = "Pants", accessoryAssetId = 0, iconAssetId = 0, description = "Six pockets. Six. Pockets."},
+    {id = "pants_rebel_cargo",    name = "Cargo Pants",          category = "Bottoms",  rarity = "Rare",      price = 350, slot = "Pants", accessoryAssetId = 0, iconAssetId = 0, description = "Six pockets. Six. Pockets.",                  productImage = "rbxassetid://118778754790242", characterImage = "rbxassetid://86368193156486"},
     {id = "pants_galaxy_legs",    name = "Galaxy Leggings",      category = "Bottoms",  rarity = "Epic",      price = 700, slot = "Pants", accessoryAssetId = 0, iconAssetId = 0, description = "Animated star pattern."},
 
     -- ===== FOOTWEAR (6) =====
     {id = "shoes_slides",         name = "Bro Slides",           category = "Footwear", rarity = "Common",    price = 60,  slot = "Shoes", accessoryAssetId = 0, iconAssetId = 0, description = "Don't forget your socks."},
-    {id = "shoes_stand_kicks",    name = "Stand Sneakers",       category = "Footwear", rarity = "Uncommon",  price = 200, slot = "Shoes", accessoryAssetId = 0, iconAssetId = 0, description = "Slip-resistant for syrup spills."},
+    {id = "shoes_stand_kicks",    name = "Chunky Dad Sneakers",  category = "Footwear", rarity = "Uncommon",  price = 200, slot = "Shoes", accessoryAssetId = 0, iconAssetId = 0, description = "Chunky soles, slip-resistant. Dad-shoe energy.", productImage = "rbxassetid://98738055044519", characterImage = "rbxassetid://107063429003256"},
     {id = "shoes_espresso_boot",  name = "Espresso Boots",       category = "Footwear", rarity = "Rare",      price = 400, slot = "Shoes", accessoryAssetId = 0, iconAssetId = 0, description = "Dark roast color, all-weather."},
     {id = "shoes_slippers",       name = "Cozy Slippers",        category = "Footwear", rarity = "Common",    price = 75,  slot = "Shoes", accessoryAssetId = 0, iconAssetId = 0, description = "Off-shift only. Maybe."},
     {id = "shoes_windmill_kicks", name = "Windmill Kicks",       category = "Footwear", rarity = "Epic",      price = 800, slot = "Shoes", accessoryAssetId = 0, iconAssetId = 0, description = "Spinning windmill on the heel."},
@@ -81,7 +84,7 @@ MerchCatalog.Items = {
     {id = "acc_lanyard",          name = "Bro Lanyard",          category = "Accessories", rarity = "Common",   price = 40,  slot = "Accessory", accessoryAssetId = 0, iconAssetId = 0, description = "Holds your stand keys."},
     {id = "acc_pin_windmill",     name = "Windmill Pin",         category = "Accessories", rarity = "Common",   price = 30,  slot = "Accessory", accessoryAssetId = 0, iconAssetId = 0, description = "Tiny, mighty, iconic."},
     {id = "acc_bracelet",         name = "Bro Bracelet",         category = "Accessories", rarity = "Uncommon", price = 150, slot = "Accessory", accessoryAssetId = 0, iconAssetId = 0, description = "Braided cord, bro-blue accent."},
-    {id = "acc_bean_necklace",    name = "Coffee Bean Necklace", category = "Accessories", rarity = "Uncommon", price = 175, slot = "Accessory", accessoryAssetId = 0, iconAssetId = 0, description = "Real-bean pendant. Smells faintly amazing."},
+    {id = "acc_bean_necklace",    name = "Windmill Chain Necklace", category = "Accessories", rarity = "Uncommon", price = 175, slot = "Accessory", accessoryAssetId = 0, iconAssetId = 0, description = "Heavy chain with a windmill pendant.",     productImage = "rbxassetid://119542404865836", characterImage = "rbxassetid://90055570076206"},
     {id = "acc_espresso_watch",   name = "Espresso Watch",       category = "Accessories", rarity = "Rare",     price = 400, slot = "Accessory", accessoryAssetId = 0, iconAssetId = 0, description = "Tracks your shots-pulled per shift."},
     {id = "acc_bro_backpack",     name = "Bro Backpack",         category = "Accessories", rarity = "Rare",     price = 450, slot = "Accessory", accessoryAssetId = 0, iconAssetId = 0, description = "Insulated drink pocket included."},
     {id = "acc_apron",            name = "Stand Apron",          category = "Accessories", rarity = "Uncommon", price = 200, slot = "Accessory", accessoryAssetId = 0, iconAssetId = 0, description = "Pockets, loops, syrup-stain-resistant."},
@@ -94,7 +97,7 @@ MerchCatalog.Items = {
     {id = "seas_reindeer_antlers",name = "Reindeer Antlers",     category = "Seasonal", rarity = "Epic",      price = 600,  slot = "Hat",       accessoryAssetId = 0, iconAssetId = 0, seasonalMonth = 12, description = "Light-up tips. December only."},
     {id = "seas_heartthrob_crop", name = "Heartthrob Crop",      category = "Seasonal", rarity = "Rare",      price = 400,  slot = "Shirt",     accessoryAssetId = 0, iconAssetId = 0, seasonalMonth = 2,  description = "All hearts, all February."},
     {id = "seas_clover_tee",      name = "Lucky Clover Tee",     category = "Seasonal", rarity = "Rare",      price = 350,  slot = "Shirt",     accessoryAssetId = 0, iconAssetId = 0, seasonalMonth = 3,  description = "Four-leaf clover hides a tiny bro logo."},
-    {id = "seas_summer_survivor", name = "Summer Survivor Tank", category = "Seasonal", rarity = "Rare",      price = 400,  slot = "Shirt",     accessoryAssetId = 0, iconAssetId = 0, seasonalMonth = 6,  description = "Made it through the rush season."},
+    {id = "seas_summer_survivor", name = "Beach Tank",           category = "Seasonal", rarity = "Rare",      price = 400,  slot = "Shirt",     accessoryAssetId = 0, iconAssetId = 0, seasonalMonth = 6,  description = "Sun-faded blue, palm-print pocket. Built for hot shifts.", productImage = "rbxassetid://116179315712736", characterImage = "rbxassetid://135421314136762"},
     {id = "seas_patriot_stripe",  name = "Patriotic Stripe",     category = "Seasonal", rarity = "Rare",      price = 400,  slot = "Shirt",     accessoryAssetId = 0, iconAssetId = 0, seasonalMonth = 7,  description = "Red, white, and Bro."},
     {id = "seas_pumpkin_card",    name = "Pumpkin Spice Cardi",  category = "Seasonal", rarity = "Epic",      price = 700,  slot = "Shirt",     accessoryAssetId = 0, iconAssetId = 0, seasonalMonth = 10, description = "Knit. Smells (visually) of pumpkin."},
     {id = "seas_galaxy_holiday",  name = "Galaxy Holiday Sweater",category= "Seasonal", rarity = "Legendary", price = 1500, slot = "Shirt",     accessoryAssetId = 0, iconAssetId = 0, seasonalMonth = 12, description = "Animated snow falls across a starfield. Once a year."},
