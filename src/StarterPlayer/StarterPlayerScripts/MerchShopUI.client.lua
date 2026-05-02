@@ -169,13 +169,15 @@ local function showTryOnPopup(item)
     panelStroke.Thickness = 3
     panelStroke.Parent = panel
 
-    -- Character mockup (or fallback to product image)
+    -- Flat-lay product detail (popup is the "tell me about this item" view;
+    -- the card already showed the character wearing it). Falls back to the
+    -- character mockup if the product shot is missing.
     local img = Instance.new("ImageLabel")
     img.Size = UDim2.fromOffset(460, 380)
     img.Position = UDim2.fromOffset(20, 20)
     img.BackgroundColor3 = Color3.fromRGB(20, 22, 28)
     img.BorderSizePixel = 0
-    img.Image = item.characterImage or item.productImage or ""
+    img.Image = item.productImage or item.characterImage or ""
     img.ScaleType = Enum.ScaleType.Fit
     img.ZIndex = 33
     img.Parent = panel
@@ -268,14 +270,16 @@ local function makeItemCard(item)
     corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = card
 
-    -- Image header (top 140px). If no productImage, the ImageLabel
-    -- shows its solid Dutch Bros blue BackgroundColor3 as a placeholder.
+    -- Image header (top 140px). Shows the character mockup ("look") so
+    -- players see the item being worn. Falls back to the flat-lay
+    -- product image when the character mockup is missing, then to a
+    -- solid Dutch Bros blue BackgroundColor3 placeholder.
     local image = Instance.new("ImageLabel")
     image.Size = UDim2.new(1, 0, 0, 140)
     image.Position = UDim2.fromOffset(0, 0)
     image.BackgroundColor3 = DUTCH_BLUE
     image.BorderSizePixel = 0
-    image.Image = item.productImage or ""
+    image.Image = item.characterImage or item.productImage or ""
     image.ScaleType = Enum.ScaleType.Crop
     image.Parent = card
 
