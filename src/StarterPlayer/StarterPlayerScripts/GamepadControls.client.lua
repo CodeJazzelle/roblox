@@ -3,19 +3,20 @@
 -- ContextActionService so the bindings show up in Roblox's built-in input
 -- mapper UI and so the player can rebind them.
 --
--- Mappings (Xbox / PlayStation):
---   ButtonA  / Cross     → Interact (fires nearest ProximityPrompt;
+-- Mappings (Xbox / PlayStation). NOTE: ButtonA is intentionally NOT
+-- bound — Roblox uses A / Cross as the default Jump key, and overriding
+-- it would prevent the character from jumping. Interact is moved to
+-- ButtonX / Square instead.
+--
+--   ButtonA  / Cross     → Jump (Roblox default, NOT bound here)
+--   ButtonX  / Square    → Interact (fires nearest ProximityPrompt;
 --                          ProximityPrompt.GamepadKeyCode is also set to
---                          ButtonA so Roblox auto-handles short-range
---                          prompts and shows the right glyph)
+--                          ButtonX so Roblox shows the right glyph and
+--                          auto-handles short-range prompts)
 --   ButtonY  / Triangle  → Toggle Character Customizer (M-key equivalent)
---   ButtonX  / Square    → Toggle Merch Shop (B-key equivalent)
 --   ButtonB  / Circle    → Toggle Quick Chat Wheel (C-key equivalent)
---   ButtonL1 / L1        → Place Ping at character position (G-key
---                          equivalent — held-and-targeted on PC, but on
---                          gamepad we just drop a ping at the player's
---                          feet for simplicity)
---   ButtonR1 / R1        → Cancel / close any open menu
+--   ButtonL1 / L1        → Place Ping at character position
+--   ButtonR1 / R1        → Toggle Merch Shop (B-key equivalent)
 --
 -- Note: ButtonB is also Roblox's default "back" button on its own menus.
 -- That conflict is unavoidable without a custom menu chrome — players can
@@ -80,13 +81,6 @@ local function toggleGui(name)
     if gui then gui.Enabled = not gui.Enabled end
 end
 
-local function closeAllMenus()
-    for _, name in ipairs({"CharacterCustomizer", "MerchShop", "QuickChatWheel"}) do
-        local g = playerGui:FindFirstChild(name)
-        if g then g.Enabled = false end
-    end
-end
-
 local function placePing()
     local character = player.Character
     if not character then return end
@@ -109,7 +103,7 @@ ContextActionService:BindAction(
     "GamepadInteract",
     onBegin(fireNearestPrompt),
     false, -- no auto touch button
-    Enum.KeyCode.ButtonA
+    Enum.KeyCode.ButtonX  -- A is reserved for Jump
 )
 ContextActionService:SetTitle("GamepadInteract", "Interact")
 
@@ -125,7 +119,7 @@ ContextActionService:BindAction(
     "GamepadShop",
     onBegin(function() toggleGui("MerchShop") end),
     false,
-    Enum.KeyCode.ButtonX
+    Enum.KeyCode.ButtonR1   -- moved off X (now Interact)
 )
 ContextActionService:SetTitle("GamepadShop", "Shop")
 
@@ -145,10 +139,7 @@ ContextActionService:BindAction(
 )
 ContextActionService:SetTitle("GamepadPing", "Ping")
 
-ContextActionService:BindAction(
-    "GamepadCancel",
-    onBegin(closeAllMenus),
-    false,
-    Enum.KeyCode.ButtonR1
-)
-ContextActionService:SetTitle("GamepadCancel", "Close Menu")
+-- (No Cancel binding — R1 is now Shop. Players can close menus by
+-- pressing the same button that opened them, or via in-menu close
+-- buttons. Roblox's own ButtonB back behavior still works on the
+-- engine's standard menus.)

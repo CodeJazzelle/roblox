@@ -37,8 +37,10 @@ end
 local HINT_TEXT = {
     keyboard    = "[E] Interact   [M] Outfit   [B] Shop   [C] Chat   [G] Ping   [WASD] Move",
     mobile      = "Tap the corner buttons: 🤝 Interact   👕 Outfit   🛒 Shop   💬 Chat   📍 Ping",
-    xbox        = "[A] Interact   [Y] Outfit   [X] Shop   [B] Chat   [LB] Ping   [RB] Close",
-    playstation = "[✕] Interact   [△] Outfit   [□] Shop   [○] Chat   [L1] Ping   [R1] Close",
+    -- A / Cross is reserved for Jump (Roblox default), so Interact moved
+    -- to X / Square and Shop moved to RB / R1.
+    xbox        = "[X] Interact   [Y] Outfit   [RB] Shop   [B] Chat   [LB] Ping   [A] Jump",
+    playstation = "[□] Interact   [△] Outfit   [R1] Shop   [○] Chat   [L1] Ping   [✕] Jump",
 }
 
 -- ============================================================
