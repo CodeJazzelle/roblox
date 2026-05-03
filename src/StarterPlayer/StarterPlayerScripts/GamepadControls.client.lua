@@ -17,6 +17,7 @@
 --   ButtonB  / Circle    → Toggle Quick Chat Wheel (C-key equivalent)
 --   ButtonL1 / L1        → Place Ping at character position
 --   ButtonR1 / R1        → Toggle Merch Shop (B-key equivalent)
+--   DPadUp              → Toggle Leaderboard (L-key equivalent)
 --
 -- Note: ButtonB is also Roblox's default "back" button on its own menus.
 -- That conflict is unavoidable without a custom menu chrome — players can
@@ -122,6 +123,16 @@ ContextActionService:BindAction(
     Enum.KeyCode.ButtonR1   -- moved off X (now Interact)
 )
 ContextActionService:SetTitle("GamepadShop", "Shop")
+
+ContextActionService:BindAction(
+    "GamepadLeaderboard",
+    onBegin(function()
+        if _G.ToggleLeaderboard then _G.ToggleLeaderboard() end
+    end),
+    false,
+    Enum.KeyCode.DPadUp
+)
+ContextActionService:SetTitle("GamepadLeaderboard", "Leaderboard")
 
 ContextActionService:BindAction(
     "GamepadChat",

@@ -110,6 +110,9 @@ end
 -- contributes to round tips automatically. Phase 1 OrderManager doesn't call
 -- AddTip on its own, so we glue it here.
 -- ============================================================================
+-- Per-player current combo (transient — resets on wrong drink or round end).
+local currentCombos = {}
+
 local origSubmit = OrderManager.SubmitDrink
 function OrderManager:SubmitDrink(player, orderID, cupData)
     local success, payload = origSubmit(self, player, orderID, cupData)
@@ -117,6 +120,25 @@ function OrderManager:SubmitDrink(player, orderID, cupData)
         EconomyManager:AwardTip(player, payload)
         RoundManager:AddTip(payload)
         PlayerData:IncrementStat(player, "totalDrinksMade", 1)
+
+        -- Cumulative leaderboard stats on the persistent profile.
+        local profile = PlayerData:Get(player)
+        if profile then
+            profile.totalTips = (profile.totalTips or 0) + payload
+            profile.totalDrinks = (profile.totalDrinks or 0) + 1
+            -- Combo: increment on success, beat the all-time max if higher.
+            currentCombos[player] = (currentCombos[player] or 0) + 1
+            if currentCombos[player] > (profile.maxCombo or 0) then
+                profile.maxCombo = currentCombos[player]
+            end
+        end
+    elseif not success then
+        currentCombos[player] = 0
     end
     return success, payload
 end
+
+-- Combo + per-player tracking cleanup
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+    currentCombos[player] = nil
+end)

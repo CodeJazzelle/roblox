@@ -70,6 +70,11 @@ local function defaultProfile()
             secretMenuOrders = 0,
         },
         lastLogin = 0,
+        -- All-time leaderboard stats (cumulative across all sessions).
+        -- Backfilled to 0 on existing profiles via the loadProfile defaults loop.
+        totalTips = 0,
+        maxCombo = 0,
+        totalDrinks = 0,
         version = 1,
     }
 end

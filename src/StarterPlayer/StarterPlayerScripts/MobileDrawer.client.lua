@@ -315,7 +315,7 @@ OrderFailed.OnClientEvent:Connect(function(orderID) removeOrderCard(orderID) end
 -- ============================================================
 -- Section: Action buttons
 -- ============================================================
-local actionsSection = makeSectionFrame(4, 296)
+local actionsSection = makeSectionFrame(4, 364)
 makeLabel(actionsSection, "ACTIONS", Enum.Font.GothamSemibold, 11, Color3.fromRGB(180, 180, 200), UDim2.fromOffset(12, 6), UDim2.new(1, -24, 0, 14))
 
 local function toggleGui(name)
@@ -359,7 +359,10 @@ makeActionButton(1, "💬", "CHAT",        Color3.fromRGB(60,  130, 220), functi
 makeActionButton(2, "🛒", "SHOP",        Color3.fromRGB(60,  180, 100), function() toggleGui("MerchShop") end)
 makeActionButton(3, "👕", "OUTFIT",      Color3.fromRGB(170, 90,  200), function() toggleGui("CharacterCustomizer") end)
 makeActionButton(4, "📍", "PLACE PING",  DUTCH_ORANGE,                  placePing)
-makeActionButton(5, "❓", "HOW TO PLAY", Color3.fromRGB(80,  80,  100), function() toggleGui("InstructionsScreen") end)
+makeActionButton(5, "🏆", "LEADERBOARD", Color3.fromRGB(255, 200, 50),  function()
+    if _G.OpenLeaderboard then _G.OpenLeaderboard() end
+end)
+makeActionButton(6, "❓", "HOW TO PLAY", Color3.fromRGB(80,  80,  100), function() toggleGui("InstructionsScreen") end)
 
 -- ============================================================
 -- Open / close
