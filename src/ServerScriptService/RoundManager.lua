@@ -20,6 +20,7 @@ RoundManager.RoundActive = false
 function RoundManager:StartRound()
     self.RoundActive = true
     self.TotalTips = 0
+    print("[RoundManager] Round started — telling OrderManager to spawn orders")
     RoundStartedEvent:FireAllClients(self.RoundLength)
     OrderManager:StartRound(self.RoundLength)
     SoundManager:PlayAt("round_start", nil, 0.5)

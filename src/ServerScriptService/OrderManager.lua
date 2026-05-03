@@ -42,18 +42,46 @@ function OrderManager:StartRound(durationSeconds)
     self.RoundActive = true
     self.CurrentDifficulty = 1
     self.ActiveOrders = {}
+    print("[OrderManager] Started spawning orders for active round")
 
-    -- Difficulty rises with elapsed time; DriveThruTraffic / NPCManager
-    -- read self.CurrentDifficulty to pace their spawn rates. We no longer
-    -- spawn orders here — every order is driven by an arriving customer
-    -- (car at the drive-thru, NPC at the walk-up window).
+    -- Difficulty + per-order timeout sweep (every 0.5s).
     task.spawn(function()
         local startTime = tick()
         while self.RoundActive and (tick() - startTime) < durationSeconds do
             self.CurrentDifficulty = 1 + math.floor((tick() - startTime) / 30)
-            task.wait(1)
+
+            -- Fail any order whose tier-based patience window expired.
+            -- FailOrder fires OrderFailedEvent with reason="Timeout" so
+            -- the client UI can flash the card red before removing it.
+            local now = tick()
+            for orderID, order in pairs(self.ActiveOrders) do
+                if order.expiresAt and now > order.expiresAt then
+                    self:FailOrder(orderID, "Timeout")
+                end
+            end
+
+            task.wait(0.5)
         end
         self.RoundActive = false
+    end)
+
+    -- Direct order-spawn loop. First order fires at t=1s so the player
+    -- has something to do immediately on spawn. Subsequent orders pace
+    -- at 8-15 second intervals. Stops when RoundActive flips false.
+    -- Note: DriveThruTraffic ALSO calls SpawnOrder when a car arrives;
+    -- the MAX_ACTIVE_ORDERS cap (8) throttles total queue size if both
+    -- spawn paths are racing.
+    task.spawn(function()
+        task.wait(1)
+        while self.RoundActive do
+            local id = self:SpawnOrder()
+            if id then
+                local order = self.ActiveOrders[id]
+                local name = (order and order.recipe and order.recipe.displayName) or "?"
+                print(("[OrderManager] Spawned order #%d: %s"):format(id, name))
+            end
+            task.wait(math.random(8, 15))
+        end
     end)
 end
 
